@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/ApiQueryFragment">
+
+    <fragment
+        android:id="@+id/ApiQueryFragment"
+        android:name="com.example.golfbetter.ApiQueryFragment"
+        android:label="@string/api_query_fragment_label"
+        tools:layout="@layout/fragment_api_query">
+
+        <action
+            android:id="@+id/action_ApiQueryFragment_to_BetFragment"
+            app:destination="@id/BetFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/BetFragment"
+        android:name="com.example.golfbetter.BetFragment"
+        android:label="@string/bet_fragment_label"
+        tools:layout="@layout/fragment_bet">
+
+        <action
+            android:id="@+id/action_BetFragment_to_ApiQueryFragment"
+            app:destination="@id/ApiQueryFragment" />
+    </fragment>
+</navigation>
