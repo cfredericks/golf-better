@@ -70,19 +70,11 @@ public class Utils {
   }
 
   /**
-   * Returns whether a {@link JSONObject} has a given key or not, and treats {@code null} as {@code false},
-   * rather than throwing a {@link JSONException} like the built in methods.
-   */
-  public static boolean hasNonNull(final JSONObject json, final String key) {
-    return json.has(key) && !json.isNull(key);
-  }
-
-  /**
    * Returns a {@link Boolean}, and returns {@code null} if it doesn't exist or is {@code null},
    * rather than throwing a {@link JSONException} like the built in methods.
    */
   public static Boolean nullableBool(final JSONObject json, final String key) {
-    if (hasNonNull(json, key)) {
+    if (!json.isNull(key)) {
       try {
         return json.getBoolean(key);
       } catch (final JSONException e) {
@@ -98,7 +90,7 @@ public class Utils {
    * rather than throwing a {@link JSONException} like the built in methods.
    */
   public static String nullableStr(final JSONObject json, final String key) {
-    if (hasNonNull(json, key)) {
+    if (!json.isNull(key)) {
       try {
         return json.getString(key);
       } catch (final JSONException e) {
@@ -114,7 +106,7 @@ public class Utils {
    * rather than throwing a {@link JSONException} like the built in methods.
    */
   public static Integer nullableInt(final JSONObject json, final String key) {
-    if (hasNonNull(json, key)) {
+    if (!json.isNull(key)) {
       try {
         return json.getInt(key);
       } catch (final JSONException e) {
@@ -130,7 +122,7 @@ public class Utils {
    * rather than throwing a {@link JSONException} like the built in methods.
    */
   public static Double nullableDouble(final JSONObject json, final String key) {
-    if (hasNonNull(json, key)) {
+    if (!json.isNull(key)) {
       try {
         return json.getDouble(key);
       } catch (final JSONException e) {
@@ -146,7 +138,7 @@ public class Utils {
    * rather than throwing a {@link JSONException} like the built in methods.
    */
   public static JSONArray nullableArray(final JSONObject json, final String key) {
-    if (hasNonNull(json, key)) {
+    if (!json.isNull(key)) {
       try {
         return json.getJSONArray(key);
       } catch (final JSONException e) {
