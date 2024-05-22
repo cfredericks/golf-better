@@ -80,4 +80,9 @@ public class UtilsTest {
         expected.add("b");
         assertEquals(expected, new HashSet<>(Utils.parseArray(arr, String::toString)));
     }
+
+    @Test
+    public void test_fail() {
+        assertEquals(1, 2);
+    }
 }
