@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/ApiQueryFragment"
-        android:name="com.example.golfbetter.ApiQueryFragment"
+        android:name="com.cfredericks.golfbetter.ApiQueryFragment"
         android:label="@string/api_query_fragment_label"
         tools:layout="@layout/fragment_api_query">
 
@@ -17,7 +17,7 @@
     </fragment>
     <fragment
         android:id="@+id/BetFragment"
-        android:name="com.example.golfbetter.BetFragment"
+        android:name="com.cfredericks.golfbetter.BetFragment"
         android:label="@string/bet_fragment_label"
         tools:layout="@layout/fragment_bet">
 

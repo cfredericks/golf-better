@@ -1,4 +1,4 @@
-package com.example.golfbetter;
+package com.cfredericks.golfbetter;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.golfbetter.databinding.FragmentApiQueryBinding;
+import com.cfredericks.golfbetter.databinding.FragmentApiQueryBinding;
 
 public class ApiQueryFragment extends Fragment implements AdapterView.OnItemSelectedListener {
   private FragmentApiQueryBinding binding;

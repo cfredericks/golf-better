@@ -1,9 +1,9 @@
-package com.example.golfbetter.models;
+package com.cfredericks.golfbetter.models;
 
-import static com.example.golfbetter.Utils.nullableDouble;
-import static com.example.golfbetter.Utils.nullableInt;
-import static com.example.golfbetter.Utils.nullableStr;
-import static com.example.golfbetter.Utils.parseArray;
+import static com.cfredericks.golfbetter.Utils.nullableDouble;
+import static com.cfredericks.golfbetter.Utils.nullableInt;
+import static com.cfredericks.golfbetter.Utils.nullableStr;
+import static com.cfredericks.golfbetter.Utils.parseArray;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

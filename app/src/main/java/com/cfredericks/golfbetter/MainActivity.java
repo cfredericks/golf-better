@@ -1,4 +1,4 @@
-package com.example.golfbetter;
+package com.cfredericks.golfbetter;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,7 +11,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.example.golfbetter.databinding.ActivityMainBinding;
+import com.cfredericks.golfbetter.databinding.ActivityMainBinding;
 import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity {

@@ -1,10 +1,10 @@
 
-package com.example.golfbetter.models;
+package com.cfredericks.golfbetter.models;
 
-import static com.example.golfbetter.Utils.nullableArray;
-import static com.example.golfbetter.Utils.parseArray;
+import static com.cfredericks.golfbetter.Utils.nullableArray;
+import static com.cfredericks.golfbetter.Utils.parseArray;
 
-import com.example.golfbetter.SportsDataApiClient;
+import com.cfredericks.golfbetter.SportsDataApiClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

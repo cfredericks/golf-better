@@ -1,4 +1,4 @@
-package com.example.golfbetter.models;
+package com.cfredericks.golfbetter.models;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,0 +1,14 @@
+[
+	{
+		"keyStr": "a",
+		"keyInt": 1,
+		"keyArr": [2, 3, 4],
+		"keyObj": { "keyInt": 5 }
+	},
+	{
+		"keyStr": "b",
+		"keyInt": 6,
+		"keyArr": [7, 8, 9],
+		"keyObj": { "keyInt": 10 }
+	}
+]

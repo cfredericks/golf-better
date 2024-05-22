@@ -1,4 +1,4 @@
-package com.example.golfbetter;
+package com.cfredericks.golfbetter;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,8 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.golfbetter.databinding.FragmentBetBinding;
-import com.example.golfbetter.models.Bet;
+import com.cfredericks.golfbetter.databinding.FragmentBetBinding;
+import com.cfredericks.golfbetter.models.Bet;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

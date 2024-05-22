@@ -1,0 +1,6 @@
+{
+	"keyStr": "a",
+	"keyInt": 1,
+	"keyArr": [1, 2, 3],
+	"keyObj": { "keyInt": 2 }
+}

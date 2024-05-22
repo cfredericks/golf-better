@@ -1,13 +1,13 @@
-package com.example.golfbetter;
+package com.cfredericks.golfbetter;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
-import com.example.golfbetter.databinding.FragmentApiQueryBinding;
-import com.example.golfbetter.models.Tournament;
-import com.example.golfbetter.models.TournamentLeaderboard;
+import com.cfredericks.golfbetter.databinding.FragmentApiQueryBinding;
+import com.cfredericks.golfbetter.models.Tournament;
+import com.cfredericks.golfbetter.models.TournamentLeaderboard;
 
 import org.json.JSONArray;
 import org.json.JSONException;

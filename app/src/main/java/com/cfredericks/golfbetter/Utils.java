@@ -1,4 +1,4 @@
-package com.example.golfbetter;
+package com.cfredericks.golfbetter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,7 +50,13 @@ public class Utils {
    * Makes a GET API call and returns a {@code T} representing the response.
    */
   public static <T> T getResponseFromURL(final String urlString, final JsonParser<T> respParser, final Duration timeout) throws IOException, JSONException {
-    final URL url = new URL(urlString);
+    return getResponseFromURL(new URL(urlString), respParser, timeout);
+  }
+
+  /**
+   * Makes a GET API call and returns a {@code T} representing the response.
+   */
+  public static <T> T getResponseFromURL(final URL url, final JsonParser<T> respParser, final Duration timeout) throws IOException, JSONException {
     final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
     urlConnection.setRequestMethod("GET");
     urlConnection.setReadTimeout((int) timeout.toMillis());
@@ -70,13 +76,13 @@ public class Utils {
   }
 
   /**
-   * Returns a {@link Boolean}, and returns {@code null} if it doesn't exist or is {@code null},
+   * Returns a {@link String}, and returns {@code null} if it doesn't exist or is {@code null},
    * rather than throwing a {@link JSONException} like the built in methods.
    */
-  public static Boolean nullableBool(final JSONObject json, final String key) {
+  public static String nullableStr(final JSONObject json, final String key) {
     if (!json.isNull(key)) {
       try {
-        return json.getBoolean(key);
+        return json.getString(key);
       } catch (final JSONException e) {
         return null;
       }
@@ -86,13 +92,13 @@ public class Utils {
   }
 
   /**
-   * Returns a {@link String}, and returns {@code null} if it doesn't exist or is {@code null},
+   * Returns a {@link Boolean}, and returns {@code null} if it doesn't exist or is {@code null},
    * rather than throwing a {@link JSONException} like the built in methods.
    */
-  public static String nullableStr(final JSONObject json, final String key) {
+  public static Boolean nullableBool(final JSONObject json, final String key) {
     if (!json.isNull(key)) {
       try {
-        return json.getString(key);
+        return json.getBoolean(key);
       } catch (final JSONException e) {
         return null;
       }
@@ -153,10 +159,10 @@ public class Utils {
    * Convert a {@link JSONArray} to a parsed Java {@link List}.
    */
   @SneakyThrows
-  public static <T> List<T> parseArray(final JSONArray json, final Function<JSONObject, T> respParser) {
-      final List<T> objs = new ArrayList<>();
+  public static <OutT, ElemT> List<OutT> parseArray(final JSONArray json, final Function<ElemT, OutT> objParser) {
+      final List<OutT> objs = new ArrayList<>();
       for (int i = 0; i < json.length(); i++) {
-        objs.add(respParser.apply(json.getJSONObject(i)));
+        objs.add(objParser.apply((ElemT) json.get(i)));
       }
       return objs;
   }

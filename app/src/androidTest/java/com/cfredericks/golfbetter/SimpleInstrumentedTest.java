@@ -1,4 +1,4 @@
-package com.example.golfbetter;
+package com.cfredericks.golfbetter;
 
 import android.content.Context;
 
@@ -16,11 +16,11 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class ExampleInstrumentedTest {
+public class SimpleInstrumentedTest {
     @Test
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.golfbetter", appContext.getPackageName());
+        assertEquals("com.cfredericks.golfbetter", appContext.getPackageName());
     }
 }
