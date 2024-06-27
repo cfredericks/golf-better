@@ -7,16 +7,42 @@ import static com.cfredericks.golfbetter.Utils.nullableInt;
 import static com.cfredericks.golfbetter.Utils.nullableStr;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
 public class UtilsTest {
+    @Mock
+    private HttpURLConnection mockUrlConnection;
+
+    @Mock
+    private InputStream mockInputStream;
+
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this);
+        when(mockUrlConnection.getInputStream()).thenReturn(mockInputStream);
+    }
+
     @Test
     public void test_nullableStr() throws JSONException {
         final JSONObject json = new JSONObject();
@@ -82,7 +108,23 @@ public class UtilsTest {
     }
 
     @Test
-    public void test_fail() {
-        assertEquals(1, 2);
+    public void test_getResponseFromURL() throws JSONException, IOException {
+        final ByteArrayInputStream is = new ByteArrayInputStream(
+            "abc\r\ndef".getBytes(StandardCharsets.UTF_8));
+        doReturn(is).when(mockUrlConnection).getInputStream();
+
+        //make getLastModified() return first 10, then 11
+        when(mockUrlConnection.getLastModified()).thenReturn(10L, 11L);
+
+        final URLStreamHandler stubUrlHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(final URL u) {
+                return mockUrlConnection;
+            }
+        };
+        final URL url = new URL("foo", "bar", 99, "/foobar", stubUrlHandler);
+        final String actual = Utils.getResponseFromURL(url, x -> x, Duration.ofSeconds(5));
+        // "/r/n" replaced by "/n" by BufferedReader.readLine()
+        assertEquals("abc\ndef", actual);
     }
 }

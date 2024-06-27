@@ -1,13 +1,16 @@
 [versions]
-agp = "8.3.1"
+agp = "8.3.2"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-appcompat = "1.6.1"
-material = "1.10.0"
+junitVersion = "1.2.0"
+espressoCore = "3.6.0"
+appcompat = "1.7.1"
+material = "1.12.0"
 constraintlayout = "2.1.4"
-navigationFragment = "2.6.0"
-navigationUi = "2.6.0"
+navigationFragment = "2.7.7"
+navigationUi = "2.7.7"
+json = "20240303"
+mockito = "3.11.2"
+lombok = "1.18.32"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -18,7 +21,9 @@ material = { group = "com.google.android.material", name = "material", version.r
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
+json = { group = "org.json", name = "json", version.ref = "json" }
+mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-
