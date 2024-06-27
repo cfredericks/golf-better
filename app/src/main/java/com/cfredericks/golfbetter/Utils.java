@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -64,15 +65,7 @@ public class Utils {
     urlConnection.setDoOutput(true);
     urlConnection.connect();
 
-    final StringBuilder sb = new StringBuilder();
-    try (final BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        sb.append(line).append("\n");
-      }
-    }
-
-    return respParser.apply(sb.toString());
+    return parseResponse(url.openStream(), respParser);
   }
 
   /**
@@ -172,5 +165,20 @@ public class Utils {
    */
   public interface JsonParser<T> {
     T apply(final String s) throws JSONException;
+  }
+
+  private static <T> T parseResponse(final InputStream dataStream, final JsonParser<T> respParser) throws IOException, JSONException {
+    final StringBuilder sb = new StringBuilder();
+    try (final BufferedReader br = new BufferedReader(new InputStreamReader(dataStream))) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        if (sb.length() > 0) {
+          sb.append("\n");
+        }
+        sb.append(line);
+      }
+    }
+
+    return respParser.apply(sb.toString());
   }
 }
