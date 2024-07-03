@@ -18,7 +18,7 @@ import java.util.List;
 // TODO: Separate API and parsing code from UI code
 public class SportsDataApiClient {
   // TODO: Allow passing this in or looking it up
-  private static final String API_KEY = "bfaf741a4b58450e8d0e5e62cfe6e23f";
+  private static final String API_KEY = "";
 
   public static final String TOURNAMENT_FORMAT = "{tournament}";
   public static final String TOURNAMENTS_ENDPOINT = "https://api.sportsdata.io/golf/v2/json/Tournaments";
