@@ -1,9 +1,11 @@
 package com.cfredericks.golfbetter.models;
 
+import static com.cfredericks.golfbetter.Utils.nullableBool;
 import static com.cfredericks.golfbetter.Utils.nullableDouble;
 import static com.cfredericks.golfbetter.Utils.nullableInt;
 import static com.cfredericks.golfbetter.Utils.nullableStr;
 import static com.cfredericks.golfbetter.Utils.parseArray;
+import static com.cfredericks.golfbetter.Utils.parseTime;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -134,9 +136,9 @@ public class LeaderboardPlayer {
         .draftKingsSalary(nullableDouble(json, "DraftKingsSalary"))
         .fanDuelSalary(nullableDouble(json, "FanDuelSalary"))
         .fantasyDraftSalary(nullableDouble(json, "FantasyDraftSalary"))
-        .teeTime(teeTimeStr != null ? Instant.parse(teeTimeStr) : null)
+        .teeTime(parseTime(teeTimeStr))
         .tournamentStatus(nullableStr(json, "TournamentStatus"))
-        .isAlternate(json.getBoolean("IsAlternate"))
+        .isAlternate(nullableBool(json, "IsAlternate"))
         .isWithdrawn(json.getBoolean("IsWithdrawn"))
         .madeCutDidNotFinish(json.getBoolean("MadeCutDidNotFinish"))
         .oddsToWin(nullableStr(json, "OddsToWin"))

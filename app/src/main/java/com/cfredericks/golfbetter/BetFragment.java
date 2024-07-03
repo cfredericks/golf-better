@@ -31,7 +31,7 @@ public class BetFragment extends Fragment {
   public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
 
-    binding.buttonBet.setOnClickListener(v -> NavHostFragment.findNavController(BetFragment.this).navigate(R.id.action_BetFragment_to_ApiQueryFragment));
+    binding.buttonBet.setOnClickListener(v -> NavHostFragment.findNavController(BetFragment.this).navigate(R.id.action_BetFragment_to_LeaderboardFragment));
 
     final ArrayAdapter<String> metricsAd
         = new ArrayAdapter<>(

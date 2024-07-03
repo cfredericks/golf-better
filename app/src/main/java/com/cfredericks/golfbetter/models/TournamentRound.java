@@ -2,6 +2,7 @@ package com.cfredericks.golfbetter.models;
 
 import static com.cfredericks.golfbetter.Utils.nullableStr;
 import static com.cfredericks.golfbetter.Utils.parseArray;
+import static com.cfredericks.golfbetter.Utils.parseDate;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -41,7 +42,7 @@ public class TournamentRound {
         .tournamentId(tournamentId)
         .roundId(roundId)
         .number(json.getInt("Number"))
-        .day(dayStr != null ? LocalDate.parse(dayStr.replace("T00:00:00", "")) : null)
+        .day(parseDate(dayStr))
         .build();
   }
 
