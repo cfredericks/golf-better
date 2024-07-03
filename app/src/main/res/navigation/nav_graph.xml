@@ -3,18 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/ApiQueryFragment">
+    app:startDestination="@id/LeaderboardFragment">
 
     <fragment
-        android:id="@+id/ApiQueryFragment"
-        android:name="com.cfredericks.golfbetter.ApiQueryFragment"
-        android:label="@string/api_query_fragment_label"
-        tools:layout="@layout/fragment_api_query">
+        android:id="@+id/LeaderboardFragment"
+        android:name="com.cfredericks.golfbetter.LeaderboardFragment"
+        android:label="@string/leaderboard_fragment_label"
+        tools:layout="@layout/fragment_leaderboard">
 
         <action
-            android:id="@+id/action_ApiQueryFragment_to_BetFragment"
+            android:id="@+id/action_LeaderboardFragment_to_BetFragment"
             app:destination="@id/BetFragment" />
     </fragment>
+
+
+
     <fragment
         android:id="@+id/BetFragment"
         android:name="com.cfredericks.golfbetter.BetFragment"
@@ -22,7 +25,7 @@
         tools:layout="@layout/fragment_bet">
 
         <action
-            android:id="@+id/action_BetFragment_to_ApiQueryFragment"
-            app:destination="@id/ApiQueryFragment" />
+            android:id="@+id/action_BetFragment_to_LeaderboardFragment"
+            app:destination="@id/LeaderboardFragment" />
     </fragment>
 </navigation>

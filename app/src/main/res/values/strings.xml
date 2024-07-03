@@ -2,8 +2,9 @@
     <string name="app_name">GolfBetter</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="api_query_fragment_label">API Query Fragment</string>
-    <string name="bet_fragment_label">Bet Fragment</string>
+    <string name="api_query_fragment_label">API Query</string>
+    <string name="bet_fragment_label">Bet</string>
+    <string name="leaderboard_fragment_label">Leaderboard</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="query">Query</string>

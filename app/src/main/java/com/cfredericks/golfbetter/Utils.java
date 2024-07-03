@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -180,5 +182,28 @@ public class Utils {
     }
 
     return respParser.apply(sb.toString());
+  }
+
+  public static LocalDate parseDate(final String date) {
+    if (date == null) {
+      return null;
+    }
+    return LocalDate.parse(date.replace("T00:00:00", ""));
+  }
+
+  public static Instant parseTime(final String timestamp) {
+    if (timestamp == null) {
+      return null;
+    }
+
+    if (timestamp.contains("T") && !timestamp.endsWith("Z")) {
+      return Instant.parse(timestamp + "Z");
+    }
+
+    if (timestamp.contains("T")) {
+      return Instant.parse(timestamp);
+    }
+
+    return Instant.parse(timestamp + "T00:00:00Z");
   }
 }

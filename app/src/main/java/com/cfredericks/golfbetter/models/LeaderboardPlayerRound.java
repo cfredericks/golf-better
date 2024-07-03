@@ -4,6 +4,8 @@ import static com.cfredericks.golfbetter.Utils.nullableBool;
 import static com.cfredericks.golfbetter.Utils.nullableInt;
 import static com.cfredericks.golfbetter.Utils.nullableStr;
 import static com.cfredericks.golfbetter.Utils.parseArray;
+import static com.cfredericks.golfbetter.Utils.parseDate;
+import static com.cfredericks.golfbetter.Utils.parseTime;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -74,8 +76,8 @@ public class LeaderboardPlayerRound {
         .playerRoundId(playerRoundId)
         .playerTournamentId(playerTournamentId)
         .number(json.getInt("Number"))
-        .day(dayStr != null ? LocalDate.parse(dayStr.replace("T00:00:00", "")) : null)
-        .teeTime(teeTimeStr != null ? Instant.parse(teeTimeStr) : null)
+        .day(parseDate(dayStr))
+        .teeTime(parseTime(teeTimeStr))
         // TODO: are some of these fields actually nullable, or is that just the randomized test data?
         .backNineStart(nullableBool(json, "BackNineStart"))
         .par(json.getInt("Par"))
