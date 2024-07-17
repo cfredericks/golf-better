@@ -1,4 +1,12 @@
-# Setup infra
+# Cloud resources
+
+- Cloud SQL: https://console.cloud.google.com/sql/instances/golf-better/overview?project=stoked-depth-428423-j7
+- Cloud functions: https://console.cloud.google.com/functions/list?project=stoked-depth-428423-j7
+- CRON schedules: https://console.cloud.google.com/cloudscheduler?project=stoked-depth-428423-j7
+- App Engine: https://console.cloud.google.com/appengine?serviceId=default&project=stoked-depth-428423-j7
+
+
+# Infra commands
 
 ```bash
 # Setup VPC connector
