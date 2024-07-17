@@ -15,3 +15,4 @@
 .cxx
 local.properties
 /gcp/scripts/key.json
+__pycache__/

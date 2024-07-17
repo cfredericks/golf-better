@@ -8,22 +8,23 @@ import sqlalchemy
 from google.cloud import secretmanager
 from threading import Thread
 
-def get_gsm_secret(secret_id, project_id='stoked-depth-428423-j7', version_id='latest'):
+DEFAULT_PROJECT_ID = 'stoked-depth-428423-j7'
+DEFAULT_VERSION_ID = 'latest'
+
+def get_gsm_secret(secret_id, project_id=DEFAULT_PROJECT_ID, version_id=DEFAULT_VERSION_ID):
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
     response = client.access_secret_version(name=name)
     payload = response.payload.data.decode('UTF-8')
     return payload
 
-sports_data_api_key = get_gsm_secret('sports-data-api-key')
-
-db_user = os.getenv('DB_USER', default='postgres')
-db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret('golf-better-cloudsql-password'))
-db_name = os.getenv('DB_NAME', default='postgres')
-db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
-db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
-
 def get_db_connection():
+    db_user = os.getenv('DB_USER', default='postgres')
+    db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret('golf-better-cloudsql-password'))
+    db_name = os.getenv('DB_NAME', default='postgres')
+    db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
+    db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
+
     pw_log = "****" if db_password is not None else "<unset>"
     print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, db={db_name}')
 
@@ -58,6 +59,8 @@ def refresh_leaderboards(request):
         Response object using `make_response`
         <https://flask.palletsprojects.com/en/1.1.x/api/#flask.make_response>.
     """
+    sports_data_api_key = get_gsm_secret('sports-data-api-key')
+
     lookback_days = 7
     process_all = False
     if request is not None:
@@ -107,7 +110,7 @@ def refresh_leaderboards(request):
             try:
                 args_str = ','.join([f'({t[0]}, {t[1]}, {t[2]}, {t[3]}, {t[4]}, {t[5]})' for t in players_by_tournament_player_id.values()])
                 #print(args_str)
-                result = db_conn.execute(sqlalchemy.text("INSERT INTO tournament_players (id, tournament_id, player_id, name, last_updated, data) VALUES " \
+                db_conn.execute(sqlalchemy.text("INSERT INTO tournament_players (id, tournament_id, player_id, name, last_updated, data) VALUES " \
                     + args_str \
                     + " ON CONFLICT (id) DO UPDATE SET tournament_id = EXCLUDED.tournament_id, player_id = EXCLUDED.player_id, name = EXCLUDED.name, last_updated = EXCLUDED.last_updated, data = EXCLUDED.data"))
 
@@ -148,4 +151,4 @@ def refresh_leaderboards(request):
 
 # For running locally
 if __name__ == '__main__':
-    refresh_tournaments(None)
+    refresh_leaderboards(None)
