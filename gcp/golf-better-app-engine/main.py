@@ -12,17 +12,17 @@ app = Flask(__name__)
 PUBLIC_API_PREFIX = '/api/v1'
 PRIVATE_API_PREFIX = '/protected/api/v1'
 
-def get_gsm_secret(project_id, secret_id, version_id):
+def get_gsm_secret(secret_id, project_id='stoked-depth-428423-j7', version_id='latest'):
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
     response = client.access_secret_version(name=name)
     payload = response.payload.data.decode('UTF-8')
     return payload
 
-sports_data_api_key = get_gsm_secret("stoked-depth-428423-j7", "sports-data-api-key", "latest")
+sports_data_api_key = get_gsm_secret('sports-data-api-key')
 
 db_user = os.getenv('DB_USER', default='postgres')
-db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret("stoked-depth-428423-j7", "golf-better-cloudsql-password", "latest"))
+db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret('golf-better-cloudsql-password'))
 db_name = os.getenv('DB_NAME', default='postgres')
 db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
 db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
