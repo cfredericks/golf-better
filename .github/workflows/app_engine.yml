@@ -22,7 +22,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest pytest-cov pytest-mock
-        pytest gcp/app-engine/test_main.py --doctest-modules --junitxml=junit/gcp/app-engine/test-results.xml --cov=com --cov-report=xml --cov-report=html
+        pytest gcp/app-engine/test_main.py --doctest-modules --junitxml=junit/gcp/app-engine/test-results.xml --cov=main --cov-report=xml --cov-report=html
     - name: Lint with Ruff
       run: |
         pip install ruff
