@@ -21,13 +21,13 @@ public class SportsDataApiClient {
   private static final String API_KEY = "";
 
   public static final String TOURNAMENT_FORMAT = "{tournament}";
-  public static final String TOURNAMENTS_ENDPOINT = "https://api.sportsdata.io/golf/v2/json/Tournaments";
+  public static final String TOURNAMENTS_ENDPOINT = "https://stoked-depth-428423-j7.uc.r.appspot.com/api/v1/tournaments";
   public static final String LEADERBOARD_ENDPOINT = "https://api.sportsdata.io/golf/v2/json/Leaderboard/" + TOURNAMENT_FORMAT;
 
   public static List<Tournament> getTournaments() {
     final JSONArray json;
     try {
-      json = Utils.getJSONArrayFromURL(TOURNAMENTS_ENDPOINT + "?key=" + API_KEY);
+      json = Utils.getJSONArrayFromURL(TOURNAMENTS_ENDPOINT);
     } catch (final IOException | JSONException e) {
       Log.e(SportsDataApiClient.class.getSimpleName(), String.format("Error reading from endpoint '%s'", TOURNAMENTS_ENDPOINT), e);
       return null;

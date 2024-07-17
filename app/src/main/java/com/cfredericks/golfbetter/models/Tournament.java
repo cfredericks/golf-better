@@ -59,7 +59,11 @@ public class Tournament {
   private List<TournamentRound> rounds;
 
   @SneakyThrows
-  public static Tournament fromApiJson(final JSONObject json) {
+  public static Tournament fromApiJson(JSONObject json, final boolean isNestedDataCol) {
+    if (isNestedDataCol) {
+      json = json.getJSONObject("data");
+    }
+
     final int tournamentId = json.getInt("TournamentID");
     final String startDateStr = nullableStr(json, "StartDate");
     final String endDateStr = nullableStr(json, "EndDate");
@@ -93,6 +97,6 @@ public class Tournament {
   }
 
   public static List<Tournament> allFromApiJson(final JSONArray json) {
-    return parseArray(json, Tournament::fromApiJson);
+    return parseArray(json, (JSONObject obj) -> fromApiJson(obj, true));
   }
 }

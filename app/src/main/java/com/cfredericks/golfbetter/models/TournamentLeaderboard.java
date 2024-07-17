@@ -31,7 +31,7 @@ public class TournamentLeaderboard {
   @SneakyThrows
   public static TournamentLeaderboard fromApiJson(final JSONObject json) {
     return TournamentLeaderboard.builder()
-        .tournament(Tournament.fromApiJson(json.getJSONObject("Tournament")))
+        .tournament(Tournament.fromApiJson(json.getJSONObject("Tournament"), false))
         .players(LeaderboardPlayer.allFromApiJson(nullableArray(json, "Players")))
         .build();
   }
