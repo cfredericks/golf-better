@@ -1,4 +1,5 @@
 import json
+import main
 import pytest
 
 from datetime import date, datetime
@@ -24,20 +25,17 @@ def mock_secret_manager(mocker):
 
 @pytest.fixture
 def client():
-    import main
     main.app.config['TESTING'] = True
     with main.app.test_client() as client:
         yield client
 
 def test_get_gsm_secret_defaults(mock_secret_manager):
-    import main
     secret_id = 'test-secret'
     secret = main.get_gsm_secret(secret_id)
     mock_secret_manager.access_secret_version.assert_called_once_with(name=f"projects/{main.DEFAULT_PROJECT_ID}/secrets/{secret_id}/versions/{main.DEFAULT_VERSION_ID}")
     assert secret == SECRET_PAYLOAD
 
 def test_get_gsm_secret_overrides(mock_secret_manager):
-    import main
     secret_id = 'test-secret'
     project_id = 'test-project-id'
     version_id = 'test-version-id'
@@ -46,17 +44,14 @@ def test_get_gsm_secret_overrides(mock_secret_manager):
     assert secret == SECRET_PAYLOAD
 
 def test_json_serial_date():
-    import main
     d = date(2024, 1, 1)
     assert main.json_serial(d) == "2024-01-01"
 
 def test_json_serial_datetime():
-    import main
     dt = datetime(2024, 1, 1)
     assert main.json_serial(dt) == "2024-01-01T00:00:00"
 
 def test_json_serial_int():
-    import main
     with pytest.raises(TypeError):
         main.json_serial(5)
 
@@ -137,7 +132,7 @@ def test_get_players_no_args(client, mocker):
     assert response.status_code == 200
     assert json.loads(response.data) == expected_response
 
-def test_get_tournaments_with_id(client, mocker):
+def test_get_players_with_id(client, mocker):
     # Mock request
     m = mocker.MagicMock()
     m.args = {'id': 77, 'tournamentId': 88}
