@@ -11,7 +11,7 @@ See directories under /gcp for specific READMEs.
 # Repo structure
 
 - [/app](/app) - Android app
-  - Also the parent [a link](/) directory contains gradle build info
+  - Also the parent directory [/](/) contains gradle build info
 - [/gcp](/gcp) - Other infrastructure/applications to manage the backend database, app engine, etc.
   - [/gcp/golf-better-app-engine](/gcp/golf-better-app-engine) - App Engine code for serving data to the Android app
   - [/gcp/golf-better-refresh-tourns-func](/gcp/golf-better-refresh-tourns-func) - Cloud Function for periodically syncing tournament info from SportsData API into CloudSQL
