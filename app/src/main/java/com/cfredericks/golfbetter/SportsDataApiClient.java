@@ -15,7 +15,6 @@ import java.util.List;
 /**
  * Helpers for querying the api.sportsdata.io API endpoints.
  */
-// TODO: Separate API and parsing code from UI code
 public class SportsDataApiClient {
   // TODO: Allow passing this in or looking it up
   private static final String API_KEY = "";
