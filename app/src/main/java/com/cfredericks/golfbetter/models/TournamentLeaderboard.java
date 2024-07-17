@@ -4,7 +4,7 @@ package com.cfredericks.golfbetter.models;
 import static com.cfredericks.golfbetter.Utils.nullableArray;
 import static com.cfredericks.golfbetter.Utils.parseArray;
 
-import com.cfredericks.golfbetter.SportsDataApiClient;
+import com.cfredericks.golfbetter.AppEngineApiClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +18,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
- * Represents a leaderboard, which is the API response for {@link SportsDataApiClient#LEADERBOARD_ENDPOINT}.
+ * Represents a leaderboard, which is the API response for {@link AppEngineApiClient#LEADERBOARD_ENDPOINT}.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -29,9 +29,10 @@ public class TournamentLeaderboard {
   private List<LeaderboardPlayer> players;
 
   @SneakyThrows
-  public static TournamentLeaderboard fromApiJson(final JSONObject json) {
+  public static TournamentLeaderboard fromApiJson(JSONObject json) {
+    json = json.getJSONObject("data");
     return TournamentLeaderboard.builder()
-        .tournament(Tournament.fromApiJson(json.getJSONObject("Tournament"), false))
+        //.tournament(Tournament.fromApiJson(json.getJSONObject("Tournament"), false))
         .players(LeaderboardPlayer.allFromApiJson(nullableArray(json, "Players")))
         .build();
   }

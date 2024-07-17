@@ -90,7 +90,8 @@ public class LeaderboardPlayer {
   private List<LeaderboardPlayerRound> rounds;
 
   @SneakyThrows
-  public static LeaderboardPlayer fromApiJson(final JSONObject json) {
+  public static LeaderboardPlayer fromApiJson(JSONObject json) {
+    json = json.getJSONObject("data");
     final int playerTournamentId = json.getInt("PlayerTournamentID");
     final String teeTimeStr = nullableStr(json, "TeeTime");
     return LeaderboardPlayer.builder()

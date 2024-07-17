@@ -1,10 +1,10 @@
 # Deploy
 
 Usually you will edit in the GCP console and test changes before deploying there,
-but you can manually create a function using somthing like:
+but you can manually create a function using something like:
 
 ```bash
-gcloud functions deploy refresh-tourns \
+gcloud functions deploy refresh-tournaments \
     --runtime python39 \
     --gen2 \
     --trigger-http \

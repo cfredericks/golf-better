@@ -72,7 +72,7 @@ def refresh_tournaments(request):
     #request_json = request.get_json(silent=True)
     #request_args = request.args
 
-    print("Querying /Tournaments API...")
+    print("Querying Tournaments API...")
     tournaments_response = requests.get("https://api.sportsdata.io/golf/v2/json/Tournaments?key=" + sports_data_api_key)
     tournaments = tournaments_response.json()
     print("Got response: ")# + json.dumps(tournaments))
@@ -96,14 +96,14 @@ def refresh_tournaments(request):
             #print(args_str)
             result = db_conn.execute(sqlalchemy.text("INSERT INTO tournaments (id, name, start_date, end_date, last_updated, data) VALUES " \
                 + args_str \
-                + "ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, start_date = EXCLUDED.start_date, end_date = EXCLUDED.end_date, last_updated = EXCLUDED.last_updated, data = EXCLUDED.data"))
+                + " ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, start_date = EXCLUDED.start_date, end_date = EXCLUDED.end_date, last_updated = EXCLUDED.last_updated, data = EXCLUDED.data"))
 
             db_conn.commit()
             print("Finished refreshing tournaments")
             return '', 200
         except Exception as e:
             print("Error writing to DB: ", e)
-            raise e
+            #raise e
             return '', 500
 
 # For running locally

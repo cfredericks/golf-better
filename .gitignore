@@ -14,4 +14,4 @@
 .externalNativeBuild
 .cxx
 local.properties
-/gcp/golf-better-scripts/key.json
+/gcp/scripts/key.json

@@ -11,11 +11,14 @@ gcloud compute networks vpc-access connectors create my-connector \
 # DB Schemas
 
 ```sql
+-- Tables
 create table tournaments (id int primary key, name text not null, start_date date, end_date date, data jsonb not null, last_updated timestamp with time zone not null);
-create table tournament_players (id int primary key, player_id int not null, tournament_id int not null, name text not null, data jsonb not null);
+create table tournament_players (id int primary key, player_id int not null, tournament_id int not null, name text not null, last_updated timestamp with time zone not null, data jsonb not null);
 
+-- Indexes
 create unique index tournaments_start_date_name on tournaments (start_date, name);
-create index tournament_players_tournament_id on tournament_players(tournament_id);
+create unique index tournament_players_player_id_tournament_id on tournament_players (player_id, tournament_id);
+create index tournament_players_tournament_id on tournament_players (tournament_id);
 ```
 
 # Connecting to cloud sql locally

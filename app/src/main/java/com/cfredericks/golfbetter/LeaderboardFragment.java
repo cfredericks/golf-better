@@ -81,7 +81,7 @@ public class LeaderboardFragment extends Fragment {
 
   private void fetchTournamentData() {
     executorService.execute(() -> {
-      tournaments = SportsDataApiClient.getTournaments();
+      tournaments = AppEngineApiClient.getTournaments();
       tournaments.sort(Comparator.comparing(Tournament::getStartDate));
 
       // Get active or next tournament to set default selection
@@ -127,7 +127,7 @@ public class LeaderboardFragment extends Fragment {
           leaderboardAdapter.updateLeaderboard(null);
         });
       }
-      leaderboard = SportsDataApiClient.getLeaderboard(tournamentId);
+      leaderboard = AppEngineApiClient.getLeaderboard(tournamentId);
       Log.i("LeaderboardFragment", "Got leaderboard API response: " + leaderboard);
       if (getActivity() != null) {
         getActivity().runOnUiThread(() -> {
