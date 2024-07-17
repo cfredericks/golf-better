@@ -1,10 +1,13 @@
 # golf-better
 ![Android CI Status](https://github.com/cfredericks/golf-better/actions/workflows/android.yml/badge.svg)
 
-To build app:
+To build and run the Android app:
 - Install Android Studio and load code
-- Set API_KEY in com.cfredericks.golfbetter.SportsDataApiClient
-- Install an emulator for running the code (or build an APK and push to a real device)
+- Login to golf-better GCP account with gcloud
+- Run the app in one of these ways:
+  - Install an emulator and run from Android Studio
+  - Connect a real device (either using USB or "adb tcpip") and run from Android Studio
+  - Build an APK and push to a real device
 
 See directories under /gcp for specific READMEs.
 
@@ -19,5 +22,7 @@ See directories under /gcp for specific READMEs.
   - [/gcp/scripts](/gcp/scripts) - Ad hoc scripts for maintenance, monitoring, etc.
   - TODO: Move other infra to repo in spirit of IaC (i.e. CloudSQL, service accounts, CRON scheduler, GSM secrets, etc.)
 - [/.github/workflows](/.github/workflows) - CI scripts
+
+# System diagram
 
 ![System Diagram](system-diagram.png)
