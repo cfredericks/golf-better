@@ -25,15 +25,3 @@ See directories under /gcp for specific READMEs.
 # System diagram
 
 ![System Diagram](system-diagram.png)
-
-# TODO
-
-- Move all infra to repo in spirit of IaC (i.e. CloudSQL, service accounts, CRON scheduler, GSM secrets, etc.)
-- Improve data model and JSON processing to use our own model, rather than a jsonb column with the original API response
-  - And rethink the data model in terms of which tables/objects we need now that we have a DB
-- Make app prettier and more usable for navigating Leaderboards
-- Improve the CRON scheduler for leaderboards so it is more efficient with live events
-- Add page for creating and tracking bets, along with necessary app engine methods and DB tables
-- Add user management (Google account)
-- Abstract out shareable code between cloud functions and app engine
-- 
