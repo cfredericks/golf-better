@@ -1,4 +1,5 @@
 # golf-better
+![Android CI Status](https://github.com/cfredericks/golf-better/actions/workflows/android.yml/badge.svg)
 
 To build app:
 - Install Android Studio and load code
