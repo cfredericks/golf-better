@@ -1,9 +1,4 @@
-if __name__ != '__main__':
-    import functions_framework
-else:
-    functions_framework = lambda: None
-    functions_framework.http = None
-
+import functions_framework
 import os
 import json
 import requests
@@ -12,14 +7,6 @@ from google.cloud.sql.connector import Connector
 import sqlalchemy
 from google.cloud import secretmanager
 from threading import Thread
-
-# Conditionally apply the "dec" decorator based on the "cond" conditional
-def conditionally(dec, cond):
-    def resdec(f):
-        if not cond:
-            return f
-        return dec(f)
-    return resdec
 
 def get_gsm_secret(secret_id, project_id='stoked-depth-428423-j7', version_id='latest'):
     client = secretmanager.SecretManagerServiceClient()
@@ -60,7 +47,7 @@ def get_db_connection():
     return pool
 
 
-@conditionally(functions_framework.http, __name__ != '__main__')
+@functions_framework.http
 def refresh_leaderboards(request):
     """HTTP Cloud Function.
     Args:
