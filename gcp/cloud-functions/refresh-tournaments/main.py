@@ -14,15 +14,13 @@ def get_gsm_secret(secret_id, project_id='stoked-depth-428423-j7', version_id='l
     payload = response.payload.data.decode('UTF-8')
     return payload
 
-sports_data_api_key = get_gsm_secret('sports-data-api-key')
-
-db_user = os.getenv('DB_USER', default='postgres')
-db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret('golf-better-cloudsql-password'))
-db_name = os.getenv('DB_NAME', default='postgres')
-db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
-db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
-
 def get_db_connection():
+    db_user = os.getenv('DB_USER', default='postgres')
+    db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret('golf-better-cloudsql-password'))
+    db_name = os.getenv('DB_NAME', default='postgres')
+    db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
+    db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
+
     pw_log = "****" if db_password is not None else "<unset>"
     print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, db={db_name}')
 
@@ -59,6 +57,8 @@ def refresh_tournaments(request):
     #request_json = request.get_json(silent=True)
     #request_args = request.args
 
+    sports_data_api_key = get_gsm_secret('sports-data-api-key')
+
     print("Querying Tournaments API...")
     tournaments_response = requests.get("https://api.sportsdata.io/golf/v2/json/Tournaments?key=" + sports_data_api_key)
     tournaments = tournaments_response.json()
@@ -81,7 +81,7 @@ def refresh_tournaments(request):
         try:
             args_str = ','.join([f'({t[0]}, {t[1]}, {t[2]}, {t[3]}, {t[4]}, {t[5]})' for t in tournaments_by_name_startDate.values()])
             #print(args_str)
-            result = db_conn.execute(sqlalchemy.text("INSERT INTO tournaments (id, name, start_date, end_date, last_updated, data) VALUES " \
+            db_conn.execute(sqlalchemy.text("INSERT INTO tournaments (id, name, start_date, end_date, last_updated, data) VALUES " \
                 + args_str \
                 + " ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, start_date = EXCLUDED.start_date, end_date = EXCLUDED.end_date, last_updated = EXCLUDED.last_updated, data = EXCLUDED.data"))
 
