@@ -77,7 +77,7 @@ def refresh_leaderboards(request):
       condition = f"Lookback {lookback_days} Days"
     print(f"Loading Tournament IDs ({condition})...")
     with pool.connect() as db_conn:
-        where_clause = '' if process_all else f" where start_date >= (current_date - interval '{lookback_days}' day)"
+        where_clause = '' if process_all else f" where start_date >= (current_date - interval '{lookback_days}' day) and start_date <= (current_date + interval '{lookback_days}' day)"
         tournament_ids = [row[0] for row in db_conn.execute(sqlalchemy.text(f"select id from tournaments{where_clause};")).fetchall()]
 
     def processLeaderboard(tournament_id, results, i, pool):
