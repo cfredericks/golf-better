@@ -35,4 +35,5 @@ See directories under /gcp for specific READMEs.
 - Improve the CRON scheduler for leaderboards so it is more efficient with live events
 - Add page for creating and tracking bets, along with necessary app engine methods and DB tables
 - Add user management (Google account)
+- Abstract out shareable code between cloud functions and app engine
 - 
