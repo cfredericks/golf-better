@@ -16,5 +16,6 @@ gcloud functions deploy refresh-tourns \
 # Run locally
 
 ```bash
-python3.11 main.py
+pip3 install -r requirements.txt
+python3 main.py
 ```
