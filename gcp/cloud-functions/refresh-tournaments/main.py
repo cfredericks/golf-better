@@ -7,7 +7,10 @@ from google.cloud.sql.connector import Connector
 import sqlalchemy
 from google.cloud import secretmanager
 
-def get_gsm_secret(secret_id, project_id='stoked-depth-428423-j7', version_id='latest'):
+DEFAULT_PROJECT_ID = 'stoked-depth-428423-j7'
+DEFAULT_VERSION_ID = 'latest'
+
+def get_gsm_secret(secret_id, project_id=DEFAULT_PROJECT_ID, version_id=DEFAULT_VERSION_ID):
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
     response = client.access_secret_version(name=name)
