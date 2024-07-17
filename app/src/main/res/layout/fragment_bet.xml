@@ -32,7 +32,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                android:text="Bet Metric:" />
+                android:text="@string/bet_metric_lbl" />
 
             <Spinner
                 android:id="@+id/metrics_spinner"
@@ -46,7 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
-            android:hint="Quantity"
+            android:hint="@string/bet_value_hint"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/metrics_spinner_grid" />
 
@@ -62,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                android:text="Comparator:" />
+                android:text="@string/bet_comparator_lbl" />
 
             <Spinner
                 android:id="@+id/comparators_spinner"
@@ -83,7 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                android:text="Player Type:" />
+                android:text="@string/bet_player_type_lbl" />
 
             <Spinner
                 android:id="@+id/player_types_spinner"
@@ -104,7 +104,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                android:text="Round Type:" />
+                android:text="@string/bet_round_type_lbl" />
 
             <Spinner
                 android:id="@+id/round_types_spinner"
@@ -118,7 +118,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
-            android:hint="Dollar Amount"
+            android:hint="@string/bet_dollar_amount_lbl"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/round_types_spinner_grid" />
 
@@ -134,7 +134,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                android:text="Round Type:" />
+                android:text="@string/bet_type_lbl" />
 
             <Spinner
                 android:id="@+id/bets_spinner"

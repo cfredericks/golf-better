@@ -24,6 +24,12 @@ jobs:
       run: chmod +x gradlew
     - name: Build and Test
       run: ./gradlew build --stacktrace
+    - name: Lint
+      run: ./gradlew lint
+    - name: Check and report lint results
+      uses: hidakatsuya/action-report-android-lint@v1.2.0
+      with:
+        result-path: 'app/build/reports/lint-results-debug.xml'
     # https://github.com/actions/upload-artifact
     #- name: Upload a Build Artifact
     #  uses: actions/upload-artifact@v4.3.3
