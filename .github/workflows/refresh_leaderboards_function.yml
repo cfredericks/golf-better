@@ -22,12 +22,11 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest pytest-cov pytest-mock
-        pytest gcp/cloud-functions/refresh-leaderboards --doctest-modules --junitxml=junit/gcp/cloud-functions/refresh-leaderboards/test-results.xml --cov=gcp/cloud-functions/refresh-leaderboards --cov-report=xml --cov-report=html
+        pytest gcp/cloud-functions/refresh-leaderboards/test_main.py --doctest-modules --junitxml=junit/gcp/cloud-functions/refresh-leaderboards/test-results.xml --cov=main --cov-report=xml --cov-report=html
     - name: Lint with Ruff
       run: |
         pip install ruff
         ruff check --output-format=github gcp/cloud-functions/refresh-leaderboards
-      continue-on-error: true
     - name: Upload pytest test results
       uses: actions/upload-artifact@v4
       with:
