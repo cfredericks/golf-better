@@ -1,5 +1,5 @@
 # golf-better
-![Android CI Status](https://github.com/cfredericks/golf-better/actions/workflows/android.yml/badge.svg) ![Android CI Status](https://github.com/cfredericks/golf-better/actions/workflows/app_engine.yml/badge.svg)  ![Android CI Status](https://github.com/cfredericks/golf-better/actions/workflows/refresh_leaderboards_function.yml/badge.svg) ![Android CI Status](https://github.com/cfredericks/golf-better/actions/workflows/refresh_tournaments_function.yml/badge.svg)
+![Android](https://github.com/cfredericks/golf-better/actions/workflows/android.yml/badge.svg) ![App Engine](https://github.com/cfredericks/golf-better/actions/workflows/app_engine.yml/badge.svg)  ![Refresh Leaderboards](https://github.com/cfredericks/golf-better/actions/workflows/refresh_leaderboards_function.yml/badge.svg) ![Refresh Tournaments](https://github.com/cfredericks/golf-better/actions/workflows/refresh_tournaments_function.yml/badge.svg)
 
 To build and run the Android app:
 - Install Android Studio and load code

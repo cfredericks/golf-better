@@ -1,4 +1,4 @@
-name: Refresh Tournaments Function CI
+name: Refresh Tournaments
 
 on:
   push:

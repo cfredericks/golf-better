@@ -1,4 +1,4 @@
-name: Refresh Leaderboards Function CI
+name: Refresh Leaderboards
 
 on:
   push:
