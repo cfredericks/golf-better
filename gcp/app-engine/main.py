@@ -87,6 +87,47 @@ def get_players():
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
         return json.dumps([row._asdict() for row in records], default=json_serial)
 
+
+@app.route(PUBLIC_API_PREFIX + '/pga-tournaments', methods=['GET'])
+def get_pga_tournaments():
+    query = "SELECT data FROM pga_tournaments where 1=1"
+    tournament_id = request.args.get('id', None)
+    if tournament_id is not None:
+        query = query + " and id = '" + tournament_id + "'"
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        records = db_conn.execute(sqlalchemy.text(query)).fetchall()
+        return json.dumps([row[0] for row in records], default=json_serial)
+
+
+@app.route(PUBLIC_API_PREFIX + '/pga-leaderboard-players', methods=['GET'])
+def get_pga_leaderboard_players():
+    query = "SELECT data FROM pga_leaderboard_players where 1=1"
+    tournament_id = request.args.get('tournamentId', None)
+    if tournament_id is not None:
+        query = query + " and tournament_id = '" + tournament_id + "'"
+    player_id = request.args.get('id', None)
+    if player_id is not None:
+        query = query + " and id = '" + player_id + "'"
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        records = db_conn.execute(sqlalchemy.text(query)).fetchall()
+        return json.dumps([row[0] for row in records], default=json_serial)
+
+@app.route(PUBLIC_API_PREFIX + '/pga-player-scorecards', methods=['GET'])
+def get_pga_player_scorecards():
+    query = "SELECT data FROM pga_player_scorecards where 1=1"
+    tournament_id = request.args.get('tournamentId', None)
+    if tournament_id is not None:
+        query = query + " and tournament_id = '" + tournament_id + "'"
+    player_id = request.args.get('id', None)
+    if player_id is not None:
+        query = query + " and id = '" + player_id + "'"
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        records = db_conn.execute(sqlalchemy.text(query)).fetchall()
+        return json.dumps([row[0] for row in records], default=json_serial)
+
 @app.route(PRIVATE_API_PREFIX + '/refreshTournaments', methods=['POST'])
 def refresh_tournaments():
     print("Querying Tournaments API...")

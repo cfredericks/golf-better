@@ -81,7 +81,8 @@ public class LeaderboardFragment extends Fragment {
 
   private void fetchTournamentData() {
     executorService.execute(() -> {
-      tournaments = AppEngineApiClient.getTournaments();
+      tournaments = AppEngineApiClient.getPgaTournaments();
+      Log.i("test", "Got PG tournaments: " + tournaments);
       tournaments.sort(Comparator.comparing(Tournament::getStartDate));
 
       // Get active or next tournament to set default selection
@@ -120,15 +121,14 @@ public class LeaderboardFragment extends Fragment {
     });
   }
 
-  private void fetchPlayersData(final int tournamentId) {
+  private void fetchPlayersData(final String tournamentId) {
     executorService.execute(() -> {
       if (getActivity() != null) {
         getActivity().runOnUiThread(() -> {
           leaderboardAdapter.updateLeaderboard(null);
         });
       }
-      leaderboard = AppEngineApiClient.getLeaderboard(tournamentId);
-      Log.i("LeaderboardFragment", "Got leaderboard API response: " + leaderboard);
+      leaderboard = AppEngineApiClient.getPgaLeaderboard(tournamentId);
       if (getActivity() != null) {
         getActivity().runOnUiThread(() -> {
           leaderboardAdapter.updateLeaderboard(leaderboard);
@@ -246,6 +246,7 @@ public class LeaderboardFragment extends Fragment {
     static class PlayerViewHolder extends RecyclerView.ViewHolder {
       private final TextView playerName;
       private final TextView playerRank;
+      private final TextView playerScore;
       private final TextView playerCountry;
       private final ImageView expandIcon;
       private final ViewGroup roundsContainer;
@@ -255,6 +256,7 @@ public class LeaderboardFragment extends Fragment {
         super(itemView);
         playerName = itemView.findViewById(R.id.player_name);
         playerRank = itemView.findViewById(R.id.player_rank);
+        playerScore = itemView.findViewById(R.id.player_score);
         playerCountry = itemView.findViewById(R.id.player_country);
         expandIcon = itemView.findViewById(R.id.expand_icon);
         roundsContainer = itemView.findViewById(R.id.rounds_container);
@@ -273,7 +275,8 @@ public class LeaderboardFragment extends Fragment {
 
       void bind(final LeaderboardPlayer player) {
         playerName.setText(player.getName());
-        playerRank.setText(player.getRank() != null ? String.valueOf(player.getRank()) : "");
+        playerRank.setText(player.getRank() != null ? player.getRank() : "");
+        playerScore.setText(player.getTotalScore() != null ? String.valueOf(player.getTotalScore()) : "");
         playerCountry.setText(player.getCountry());
         displayRounds(player.getRounds());
       }
