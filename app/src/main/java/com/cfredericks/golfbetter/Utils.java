@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -47,6 +48,13 @@ public class Utils {
    */
   public static JSONArray getJSONArrayFromURL(final String urlString, final Duration timeout) throws IOException, JSONException {
     return getResponseFromURL(urlString, JSONArray::new, timeout);
+  }
+
+  /**
+   * Makes a GET API call and returns a {@code T} representing the response.
+   */
+  public static <T> T getResponseFromURL(final String urlString, final JsonParser<T> respParser) throws IOException, JSONException {
+    return getResponseFromURL(new URL(urlString), respParser, DEFAULT_TIMEOUT);
   }
 
   /**
@@ -205,5 +213,29 @@ public class Utils {
     }
 
     return Instant.parse(timestamp + "T00:00:00Z");
+  }
+
+  public static <T> Iterable<T> optionalIter(final Iterable<T> iter) {
+    if (iter == null) {
+      return Collections.emptyList();
+    }
+
+    return iter;
+  }
+
+  public static boolean isInteger(String s) {
+    return isInteger(s,10);
+  }
+
+  public static boolean isInteger(String s, int radix) {
+    if(s.isEmpty()) return false;
+    for(int i = 0; i < s.length(); i++) {
+      if(i == 0 && s.charAt(i) == '-') {
+        if(s.length() == 1) return false;
+        else continue;
+      }
+      if(Character.digit(s.charAt(i),radix) < 0) return false;
+    }
+    return true;
   }
 }

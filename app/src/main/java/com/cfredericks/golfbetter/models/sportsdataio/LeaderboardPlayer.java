@@ -1,4 +1,4 @@
-package com.cfredericks.golfbetter.models;
+package com.cfredericks.golfbetter.models.sportsdataio;
 
 import static com.cfredericks.golfbetter.Utils.nullableBool;
 import static com.cfredericks.golfbetter.Utils.nullableDouble;
@@ -34,11 +34,11 @@ public class LeaderboardPlayer {
   private int playerId;
   private int tournamentId;
   private String name;
-  private String rank;
+  private Integer rank;
   private String country;
 
   // TODO: why are some of these double instead of int?
-  private String totalScore;
+  private Double totalScore;
   private Double totalStrokes;
   private Double totalThrough;
   private Double earnings;
@@ -94,8 +94,6 @@ public class LeaderboardPlayer {
     json = json.getJSONObject("data");
     final int playerTournamentId = json.getInt("PlayerTournamentID");
     final String teeTimeStr = nullableStr(json, "TeeTime");
-    final Integer rank = nullableInt(json, "Rank");
-    final Double score = nullableDouble(json, "TotalScore");
     return LeaderboardPlayer.builder()
         .id(UUID.nameUUIDFromBytes(Integer.toString(playerTournamentId).getBytes(StandardCharsets.UTF_8)))
         .playerTournamentId(playerTournamentId)
@@ -103,9 +101,9 @@ public class LeaderboardPlayer {
         .tournamentId(json.getInt("TournamentID"))
         .name(json.getString("Name"))
         // TODO: are some of these fields actually nullable, or is that just the randomized test data?
-        .rank(rank != null ? rank.toString() : null)
+        .rank(nullableInt(json, "Rank"))
         .country(json.getString("Country"))
-        .totalScore(score != null ? score.toString() : null)
+        .totalScore(nullableDouble(json, "TotalScore"))
         .totalStrokes(nullableDouble(json, "TotalStrokes"))
         .totalThrough(nullableDouble(json, "TotalThrough"))
         .earnings(nullableDouble(json, "Earnings"))

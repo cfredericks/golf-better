@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.recyclerview)
+    implementation(libs.gson)
     testImplementation(libs.junit)
     testImplementation(libs.json)
     testImplementation(libs.mockito)

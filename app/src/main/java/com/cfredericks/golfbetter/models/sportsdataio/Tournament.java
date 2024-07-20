@@ -1,4 +1,4 @@
-package com.cfredericks.golfbetter.models;
+package com.cfredericks.golfbetter.models.sportsdataio;
 
 import static com.cfredericks.golfbetter.Utils.nullableArray;
 import static com.cfredericks.golfbetter.Utils.nullableDouble;
@@ -11,8 +11,10 @@ import com.cfredericks.golfbetter.AppEngineApiClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -29,8 +31,8 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class Tournament {
-  private String id;
-  private String tournamentId;
+  private UUID id;
+  private Integer tournamentId;
   private String name;
   private LocalDate startDate;
   private LocalDate endDate;
@@ -66,8 +68,8 @@ public class Tournament {
     final String startDateStr = nullableStr(json, "StartDate");
     final String endDateStr = nullableStr(json, "EndDate");
     return Tournament.builder()
-        .id(Integer.toString(tournamentId))
-        .tournamentId(Integer.toString(tournamentId))
+        .id(UUID.nameUUIDFromBytes(Integer.toString(tournamentId).getBytes(StandardCharsets.UTF_8)))
+        .tournamentId(tournamentId)
         .name(json.getString("Name"))
         .startDate(startDateStr != null ? LocalDate.parse(startDateStr.replace("T00:00:00", "")) : null)
         .endDate(endDateStr != null ? LocalDate.parse(endDateStr.replace("T00:00:00", "")) : null)
