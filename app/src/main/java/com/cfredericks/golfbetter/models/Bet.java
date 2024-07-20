@@ -24,7 +24,7 @@ public class Bet {
   // empty for all players in bet session
   private List<Integer> otherPlayerIdsInBet;
   // maybe be null/empty even if otherPlayerIdsInBet is not, depending on if we've loaded join data
-  private List<LeaderboardPlayer> otherPlayersInBet;
+  private List<Player> otherPlayersInBet;
   private float dollarAmount;
   private BetType betType;
   private int round; // 0 for entire tournament
@@ -37,7 +37,7 @@ public class Bet {
 
   // Computed later - usually only a single player
   private List<Integer> winningPlayerIds;
-  private List<LeaderboardPlayer> winningPlayers;
+  private List<Player> winningPlayers;
 
   public enum MetricType {
     Score, NumDoubleBogeys, NumBogeys, NumPars, NumBirdies, NumEagles, NumParsOrBetter, NumBirdieOrBetter

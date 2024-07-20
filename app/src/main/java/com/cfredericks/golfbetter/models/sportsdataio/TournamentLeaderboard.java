@@ -4,7 +4,7 @@ package com.cfredericks.golfbetter.models.sportsdataio;
 import static com.cfredericks.golfbetter.Utils.nullableArray;
 import static com.cfredericks.golfbetter.Utils.parseArray;
 
-import com.cfredericks.golfbetter.AppEngineApiClient;
+import com.cfredericks.golfbetter.clients.SportsDataIoAppEngineClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +18,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
- * Represents a leaderboard, which is the API response for {@link AppEngineApiClient#LEADERBOARD_ENDPOINT}.
+ * Represents a leaderboard, which is the API response for {@link SportsDataIoAppEngineClient#LEADERBOARD_ENDPOINT}.
  */
 @Getter
 @Builder(toBuilder = true)

@@ -223,6 +223,18 @@ public class Utils {
     return iter;
   }
 
+  public static Integer parseScore(final String score) {
+    if (score == null || score.isEmpty() || " ".equals(score) || "-".equals(score)) {
+      return null;
+    }
+
+    if ("E".equals(score)) {
+      return 0;
+    }
+
+    return Integer.parseInt(score);
+  }
+
   public static boolean isInteger(String s) {
     return isInteger(s,10);
   }

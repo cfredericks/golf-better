@@ -6,7 +6,7 @@ import static com.cfredericks.golfbetter.Utils.nullableInt;
 import static com.cfredericks.golfbetter.Utils.nullableStr;
 import static com.cfredericks.golfbetter.Utils.parseArray;
 
-import com.cfredericks.golfbetter.AppEngineApiClient;
+import com.cfredericks.golfbetter.clients.SportsDataIoAppEngineClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,7 +23,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
- * Represents a tournament, which is the API response for {@link AppEngineApiClient#TOURNAMENT_FORMAT},
+ * Represents a tournament, which is the API response for {@link SportsDataIoAppEngineClient#TOURNAMENT_FORMAT},
  * as well as a subfield in {@link TournamentLeaderboard}.
  */
 @Getter

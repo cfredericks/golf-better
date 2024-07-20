@@ -22,7 +22,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cfredericks.golfbetter.models.LeaderboardPlayer;
+import com.cfredericks.golfbetter.clients.PgaAppEngineClient;
+import com.cfredericks.golfbetter.models.Player;
 import com.cfredericks.golfbetter.models.LeaderboardPlayerRound;
 import com.cfredericks.golfbetter.models.LeaderboardPlayerRoundHole;
 import com.cfredericks.golfbetter.models.Tournament;
@@ -65,7 +66,7 @@ public class LeaderboardFragment extends Fragment {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         final Tournament selectedTournament = tournaments.get(position);
-        fetchPlayersData(selectedTournament.getTournamentId());
+        fetchPlayersData(selectedTournament.getId());
       }
 
       @Override
@@ -81,7 +82,7 @@ public class LeaderboardFragment extends Fragment {
 
   private void fetchTournamentData() {
     executorService.execute(() -> {
-      tournaments = AppEngineApiClient.getPgaTournaments();
+      tournaments = PgaAppEngineClient.getTournaments();
       Log.i("test", "Got PG tournaments: " + tournaments);
       tournaments.sort(Comparator.comparing(Tournament::getStartDate));
 
@@ -128,7 +129,9 @@ public class LeaderboardFragment extends Fragment {
           leaderboardAdapter.updateLeaderboard(null);
         });
       }
-      leaderboard = AppEngineApiClient.getPgaLeaderboard(tournamentId);
+
+      leaderboard = PgaAppEngineClient.getLeaderboard(tournamentId);
+
       if (getActivity() != null) {
         getActivity().runOnUiThread(() -> {
           leaderboardAdapter.updateLeaderboard(leaderboard);
@@ -197,7 +200,7 @@ public class LeaderboardFragment extends Fragment {
       }
 
       if (isActive) {
-        textView.setBackgroundColor(Color.GREEN);
+        textView.setBackgroundColor(Color.rgb(0, 0x88, 0));
       } else if (isOver) {
         textView.setBackgroundColor(Color.GRAY);
       } else {
@@ -209,7 +212,7 @@ public class LeaderboardFragment extends Fragment {
   }
 
   private static class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.PlayerViewHolder> {
-    private List<LeaderboardPlayer> players;
+    private List<Player> players;
 
     LeaderboardAdapter(final TournamentLeaderboard leaderboard) {
       if (leaderboard != null) {
@@ -234,7 +237,7 @@ public class LeaderboardFragment extends Fragment {
 
     @Override
     public void onBindViewHolder(final PlayerViewHolder holder, final int position) {
-      final LeaderboardPlayer player = players.get(position);
+      final Player player = players.get(position);
       holder.bind(player);
     }
 
@@ -273,7 +276,7 @@ public class LeaderboardFragment extends Fragment {
         });
       }
 
-      void bind(final LeaderboardPlayer player) {
+      void bind(final Player player) {
         playerName.setText(player.getName());
         playerRank.setText(player.getRank() != null ? player.getRank() : "");
         playerScore.setText(player.getTotalScore() != null ? String.valueOf(player.getTotalScore()) : "");

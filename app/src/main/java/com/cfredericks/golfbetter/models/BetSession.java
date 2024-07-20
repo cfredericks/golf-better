@@ -21,7 +21,7 @@ public class BetSession {
   // empty for all players
   private List<UUID> otherPlayerIdsInBetSession;
   // maybe be null/empty even if otherPlayerIdsInBetSession is not, depending on if we've loaded join data
-  private List<LeaderboardPlayer> otherPlayersInBetSession;
+  private List<Player> otherPlayersInBetSession;
   private List<UUID> betIds;
   private List<Bet> bets;
 }
