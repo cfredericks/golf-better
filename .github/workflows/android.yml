@@ -49,16 +49,16 @@ jobs:
       run: ./gradlew ${{ env.main_project_module }}:bundleRelease
     # Upload Artifact Build
     # Noted For Output [main_project_module]/build/outputs/apk/debug/
-    - name: Upload APK Debug - ${{ github.env.repository_name }}
+    - name: Upload APK Debug - ${{ github.event.repository.name }}
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.env.repository_name }}-${{ github.env.sha }}-${{ github.event.repository.pushed_at }}-debug
+        name: ${{ github.event.repository.name }}-${{ github.event.after }}-${{ github.event.repository.pushed_at }}-debug
         path: ${{ env.main_project_module }}/build/outputs/apk/debug/
     # Noted For Output [main_project_module]/build/outputs/apk/release/
-    - name: Upload APK Release - ${{ env.repository_name }}
+    - name: Upload APK Release - ${{ github.event.repository.name }}
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.env.repository_name }}-${{ github.env.sha }}-${{ github.event.repository.pushed_at }}-release
+        name: ${{ github.event.repository.name }}-${{ github.event.after }}-${{ github.event.repository.pushed_at }}-release
         path: ${{ env.main_project_module }}/build/outputs/apk/release/
 
     # https://github.com/actions/upload-artifact
