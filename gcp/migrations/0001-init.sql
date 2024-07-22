@@ -88,21 +88,21 @@ create table player_group_members (
 );
 create index player_group_members_player_id on player_group_members (player_id);
 
+-- TODO add other tables/fields to define the actual content and result/status of bets
+create table bets (
+    id text primary key,
+    time_frame text not null -- e.g. Hole, Round, Tournament, Season, etc.
+);
+
 create table bet_instances (
     id text primary key,
     owner_id text not null references users(id),
     league_id text not null references leagues(id),
     bet_id text not null references bets(id),
-    player_group_id text not null references player_groups(id),
+    player_group_id text not null references player_groups(id)
     -- TODO add other tables/fields to define the actual content and result/status of bets
 );
 create index bet_instances_owner_id on bet_instances (owner_id);
 create index bet_instances_league_id on bet_instances (league_id);
 create index bet_instances_bet_id on bet_instances (bet_id);
 create index bet_instances_player_group_id on bet_instances (player_group_id);
-
--- TODO add other tables/fields to define the actual content and result/status of bets
-create table bets (
-    id text primary key,
-    time_frame text not null, -- e.g. Hole, Round, Tournament, Season, etc.
-);
