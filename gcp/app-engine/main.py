@@ -3,7 +3,7 @@ import os
 import json
 import requests
 from datetime import date, datetime
-from google.cloud.sql.connector import Connector, IPTypes
+from google.cloud.sql.connector import Connector #, IPTypes
 import sqlalchemy
 from google.cloud import secretmanager
 
