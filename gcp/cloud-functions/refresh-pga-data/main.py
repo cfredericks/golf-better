@@ -73,17 +73,6 @@ def get_db_connection():
 
     connector = Connector()
     def getconn():
-<<<<<<< Updated upstream
-        conn = connector.connect(
-            db_instance_conn_name,
-            "pg8000",
-            user=db_user,
-            password=db_password,
-            db=db_name,
-            #ip_type=IPTypes.PRIVATE
-        )
-        return conn
-=======
         if db_instance_conn_name:
             conn = connector.connect(
                 db_instance_conn_name,
@@ -102,7 +91,6 @@ def get_db_connection():
                 port=db_port,
                 database=db_name
             )
->>>>>>> Stashed changes
 
     pool = sqlalchemy.create_engine(
         "postgresql+pg8000://",
