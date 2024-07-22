@@ -9,6 +9,7 @@ from datetime import datetime as dt
 from google.cloud.sql.connector import Connector
 import sqlalchemy
 from google.cloud import secretmanager
+import pg8000
 
 DEFAULT_PROJECT_ID = 'stoked-depth-428423-j7'
 DEFAULT_VERSION_ID = 'latest'
@@ -34,6 +35,7 @@ GRAPHQL_HEADERS = {
 }
 
 SCHEDULE_TYPE = 'schedule'
+PLAYERS_TYPE = 'players'
 LEADERBOARD_TYPE = 'leaderboard'
 TOURNAMENTS_TYPE = 'tournaments'
 TOURNAMENT_OVERVIEW_TYPE = 'tournament_overview'
@@ -42,6 +44,7 @@ SHOT_DETAILS_TYPE = 'shot_details'
 SCORECARD_TYPE = 'scorecard'
 ALL_DATA_TYPES = [
     SCHEDULE_TYPE,
+    PLAYERS_TYPE,
     LEADERBOARD_TYPE,
     TOURNAMENTS_TYPE,
     TOURNAMENT_OVERVIEW_TYPE,
@@ -63,12 +66,14 @@ def get_db_connection():
     db_name = os.getenv('DB_NAME', default='postgres')
     db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
     db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
+    db_port = os.getenv('DB_PORT', default=5432)
 
     pw_log = "****" if db_password is not None else "<unset>"
-    print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, db={db_name}')
+    print(f'Connecting to PG on user={db_user}, pw={db_password}, host={db_host}, port={db_port}, db={db_name}')
 
     connector = Connector()
     def getconn():
+<<<<<<< Updated upstream
         conn = connector.connect(
             db_instance_conn_name,
             "pg8000",
@@ -77,10 +82,33 @@ def get_db_connection():
             db=db_name
         )
         return conn
+=======
+        if db_instance_conn_name:
+            conn = connector.connect(
+                db_instance_conn_name,
+                "pg8000",
+                user=db_user,
+                password=db_password,
+                db=db_name,
+                #ip_type=IPTypes.PRIVATE
+            )
+            return conn
+        else:
+            return pg8000.connect(
+                user=db_user,
+                password=db_password,
+                host=db_host,
+                port=db_port,
+                database=db_name
+            )
+>>>>>>> Stashed changes
 
     pool = sqlalchemy.create_engine(
         "postgresql+pg8000://",
         creator=getconn,
+        connect_args={
+            "port": db_port
+        }
     )
 
     return pool
@@ -178,6 +206,23 @@ def refresh_data(request):
             if code < 200 or code >= 300:
                 return msg, code
 
+    if PLAYERS_TYPE in data_types:
+        data = query_players()
+        db_table = 'pga_players'
+        db_cols = ['id', 'name', 'last_updated', 'data']
+        to_upsert = []
+        for p in data:
+            to_upsert.append((
+                "'" + p['id'] + "'",
+                "'" + p['displayName'].replace("'", "''") + "'",
+                "'" + str(last_updated) + "'",
+                "'" + json.dumps(p).replace("'", "''") + "'"
+            ))
+        msg, code = upsert(to_upsert, pool, db_table, db_cols)
+        if code < 200 or code >= 300:
+            return msg, code
+
+
     # TODO: Parallelize all nested loops for tournament ID, player ID, and round
     for tournament_id in tournament_ids:
         # If requires rounds, load if needed
@@ -208,47 +253,51 @@ def refresh_data(request):
             print(f'Using player IDs: {player_ids_to_query}')
 
         for data_type in data_types:
-            if data_type == SCHEDULE_TYPE:
+            if data_type == SCHEDULE_TYPE or data_type == PLAYERS_TYPE:
                 # Already handled outside loop
                 continue
 
-            db_table = None
-            db_cols = None
-            to_upsert = []
+            db_tables = []
+            db_cols = []
+            to_upserts = []
             data = None
             if data_type == LEADERBOARD_TYPE:
-                db_table = 'pga_leaderboard_players'
-                db_cols = ['id', 'tournament_id', 'player_id', 'last_updated', 'data']
                 if not leaderboard_data:
                     leaderboard_data = query_leaderboard_v3(tournament_id)
                 data = leaderboard_data
+                db_tables.append('pga_leaderboard_players')
+                db_cols.append(['id', 'tournament_id', 'player_id', 'last_updated', 'data'])
+                to_upsert = []
                 for p in leaderboard_data['players']:
-                    to_upsert.append((
-                        "'" + tournament_id + '-' + p['id'] + "'",
-                        "'" + tournament_id + "'",
-                        "'" + p['id'] + "'",
-                        "'" + str(last_updated) + "'",
-                        "'" + json.dumps(p).replace("'", "''") + "'"
-                    ))
+                    if '-' not in p['id']:
+                        to_upsert.append((
+                            "'" + tournament_id + '-' + p['id'] + "'",
+                            "'" + tournament_id + "'",
+                            "'" + p['id'] + "'",
+                            "'" + str(last_updated) + "'",
+                            "'" + json.dumps(p).replace("'", "''") + "'"
+                        ))
+                to_upserts.append(to_upsert)
             elif data_type == TOURNAMENTS_TYPE:
-                db_table = 'tournaments'
+                db_tables.append('tournaments')
                 data = query_tournaments([tournament_id])
             elif data_type == TOURNAMENT_OVERVIEW_TYPE:
-                db_table = 'pga_tournament_overviews'
+                db_tables.append('pga_tournament_overviews')
                 data = query_tournament_overview(tournament_id)
             elif data_type == WEATHER_TYPE:
-                db_table = 'pga_weather'
+                db_tables.append('pga_weather')
                 data = query_weather(tournament_id)
             elif data_type == SHOT_DETAILS_TYPE:
-                db_table = 'pga_shot_details'
+                db_tables.append('pga_shot_details')
                 data = []
                 for round in rounds_to_query:
                     for player_id in player_ids_to_query:
                         data.append(query_shot_details_v3(tournament_id, player_id, round))
             elif data_type == SCORECARD_TYPE:
-                db_table = 'pga_player_scorecards'
-                db_cols = ['id', 'tournament_id', 'player_id', 'last_updated', 'data']
+                db_tables.append('pga_player_scorecards')
+                db_cols.append(['id', 'tournament_id', 'player_id', 'last_updated', 'data'])
                 data = []
+                to_upsert = []
                 for player_id in player_ids_to_query:
                     scorecard = query_scorecard_v3(tournament_id, player_id)
                     data.append(scorecard)
@@ -259,6 +308,7 @@ def refresh_data(request):
                         "'" + str(last_updated) + "'",
                         "'" + json.dumps(scorecard).replace("'", "''") + "'"
                     ))
+                to_upserts.append(to_upsert)
             else:
                 raise Exception(f"Unknown data type: {data_type}")
 
@@ -267,9 +317,10 @@ def refresh_data(request):
                 print(json.dumps(data))
                 continue
 
-            msg, code = upsert(to_upsert, pool, db_table, db_cols)
-            if code < 200 or code >= 300:
-                return msg, code
+            for i in range(0, len(db_tables)):
+                msg, code = upsert(to_upserts[i], pool, db_tables[i], db_cols[i])
+                if code < 200 or code >= 300:
+                    return msg, code
 
     return '', 200
 
@@ -374,6 +425,41 @@ def query_schedule(year=dt.utcnow().year, tour_code='R'):
 
     response = requests.post(GRAPHQL_ENDPOINT, headers=GRAPHQL_HEADERS, json=data)
     return response.json()['data']['schedule']
+
+def query_players(tour_code='R'):
+    data = {
+        "operationName": "PlayerDirectory",
+        "variables": {
+            "tourCode": f"{tour_code}"
+        },
+        "query": '''
+        query PlayerDirectory($tourCode: TourCode!, $active: Boolean) {
+            playerDirectory(tourCode: $tourCode, active: $active) {
+                tourCode
+                players {
+                    id
+                    isActive
+                    firstName
+                    lastName
+                    shortName
+                    displayName
+                    alphaSort
+                    country
+                    countryFlag
+                    headshot
+                    playerBio {
+                        id
+                        age
+                        education
+                        turnedPro
+                    }
+                }
+            }
+        }'''
+    }
+
+    response = requests.post(GRAPHQL_ENDPOINT, headers=GRAPHQL_HEADERS, json=data)
+    return response.json()['data']['playerDirectory']['players']
 
 def query_leaderboard_v3(tournament_id):
     data = {
