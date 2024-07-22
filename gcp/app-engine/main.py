@@ -6,6 +6,7 @@ from datetime import date, datetime
 from google.cloud.sql.connector import Connector #, IPTypes
 import sqlalchemy
 from google.cloud import secretmanager
+import pg8000
 
 app = Flask(__name__)
 
@@ -35,25 +36,37 @@ def get_db_connection():
     db_name = os.getenv('DB_NAME', default='postgres')
     db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
     db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
+    db_port = os.getenv('DB_PORT', default=5432)
 
     pw_log = "****" if db_password is not None else "<unset>"
-    print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, db={db_name}')
+    print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, port={db_port}, db={db_name}')
 
     connector = Connector()
     def getconn():
-        conn = connector.connect(
-            db_instance_conn_name,
-            "pg8000",
-            user=db_user,
-            password=db_password,
-            db=db_name,
-            #ip_type=IPTypes.PRIVATE
-        )
-        return conn
+        if db_instance_conn_name:
+            return connector.connect(
+                db_instance_conn_name,
+                "pg8000",
+                user=db_user,
+                password=db_password,
+                db=db_name,
+                #ip_type=IPTypes.PRIVATE
+            )
+        else:
+            return pg8000.connect(
+                user=db_user,
+                password=db_password,
+                host=db_host,
+                port=db_port,
+                database=db_name
+            )
 
     pool = sqlalchemy.create_engine(
         "postgresql+pg8000://",
         creator=getconn,
+        connect_args={
+            "port": db_port
+        }
     )
 
     return pool

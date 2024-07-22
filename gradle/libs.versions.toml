@@ -1,6 +1,8 @@
 [versions]
 agp = "8.3.2"
 credentials = "1.2.2"
+firebaseAuth = "23.0.0"
+firebaseBom = "33.1.2"
 googleid = "1.1.1"
 credentialsPlayServicesAuth = "<latest version>"
 gson = "2.10.1"
@@ -19,6 +21,8 @@ recyclerview = "1.3.2"
 
 [libraries]
 credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
