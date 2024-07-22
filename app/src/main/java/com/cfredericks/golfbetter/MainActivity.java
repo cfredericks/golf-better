@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.credentials.CredentialManagerCallback;
@@ -65,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onClick(View v) {
         signIn();
+      }
+    });
+
+    final Button signoutButton = findViewById(R.id.sign_out_button);
+    signoutButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        handleSignOut();
       }
     });
 
@@ -144,11 +153,10 @@ public class MainActivity extends AppCompatActivity {
       Log.i("MainActivity", "Got PublicKeyCredential: " + responseJson);
       // Share responseJson i.e. a GetCredentialResponse on your server to validate and authenticate
     } else if (credential instanceof PasswordCredential) {
-      signedInUser = ((PasswordCredential) credential).getId();
+      final String username = ((PasswordCredential) credential).getId();
       final String password = ((PasswordCredential) credential).getPassword();
-      Log.i("MainActivity", "PasswordCredential: user=" + signedInUser + ", pw=" + password);
-      findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-      findViewById(R.id.content_main_container).setVisibility(View.VISIBLE);
+      Log.i("MainActivity", "PasswordCredential: user=" + username + ", pw=" + password);
+      handleSignIn(username);
       return;
     } else if (credential instanceof CustomCredential) {
       if (GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {
@@ -157,9 +165,7 @@ public class MainActivity extends AppCompatActivity {
           // authenticate on your server.
           final GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential
               .createFrom(credential.getData());
-          signedInUser = googleIdTokenCredential.getId();
-          findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-          findViewById(R.id.content_main_container).setVisibility(View.VISIBLE);
+          handleSignIn(googleIdTokenCredential.getId());
           Log.e("MainActivity", "Got GoogleIdTokenCredential: id=" + googleIdTokenCredential.getId() + ", name=" + googleIdTokenCredential.getDisplayName() + ", data=" + googleIdTokenCredential.getData());
           return;
         } catch (final Exception e) {
@@ -177,7 +183,24 @@ public class MainActivity extends AppCompatActivity {
       Log.e("MainActivity", "Unable to extract username");
     }
 
+    handleSignOut();
+  }
+
+  public void handleSignIn(final String user) {
+    signedInUser = user;
+    findViewById(R.id.sign_in_button).setVisibility(View.GONE);
+    findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+    findViewById(R.id.current_user).setVisibility(View.VISIBLE);
+    findViewById(R.id.content_main_container).setVisibility(View.VISIBLE);
+    ((TextView)findViewById(R.id.current_user)).setText(signedInUser);
+  }
+
+  public void handleSignOut() {
+    signedInUser = null;
     findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+    findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+    findViewById(R.id.current_user).setVisibility(View.GONE);
     findViewById(R.id.content_main_container).setVisibility(View.GONE);
+    ((TextView)findViewById(R.id.current_user)).setText(null);
   }
 }
