@@ -44,6 +44,10 @@ create index pga_player_scorecardss_player_id on pga_player_scorecards (player_i
 
 # Connecting to cloud sql locally
 
+Either use Cloud SQL Studio, i.e. https://console.cloud.google.com/sql/instances/golf-better/studio?authuser=1&project=stoked-depth-428423-j7
+
+Or to connect from your local machine using port forwarding:
+
 1. Enable public IP on the instance here: https://console.cloud.google.com/sql/instances/golf-better/overview?authuser=1&project=stoked-depth-428423-j7
 2. Install proxy (if not already done)
 ```bash

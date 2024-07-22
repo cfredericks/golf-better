@@ -6,7 +6,7 @@ import argparse
 import json
 import requests
 from datetime import datetime as dt
-from google.cloud.sql.connector import Connector
+from google.cloud.sql.connector import Connector, IPTypes
 import sqlalchemy
 from google.cloud import secretmanager
 
@@ -74,7 +74,8 @@ def get_db_connection():
             "pg8000",
             user=db_user,
             password=db_password,
-            db=db_name
+            db=db_name,
+            #ip_type=IPTypes.PRIVATE
         )
         return conn
 
