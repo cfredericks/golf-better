@@ -19,7 +19,7 @@ create table pga_players (
 create table pga_leaderboard_players (
     id text primary key,
     tournament_id text not null,
-    player_id text not null references pga_players(id),
+    player_id text not null,
     data jsonb not null,
     last_updated timestamp with time zone not null
 );
@@ -28,8 +28,8 @@ create index pga_leaderboard_players_player_id on pga_leaderboard_players (playe
 
 create table pga_player_scorecards (
     id text primary key,
-    tournament_id text not null references pga_tournaments(id),
-    player_id text not null references pga_players(id),
+    tournament_id text not null,
+    player_id text not null,
     data jsonb not null,
     last_updated timestamp with time zone not null
 );
