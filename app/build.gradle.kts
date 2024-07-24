@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.cfredericks.golfbetter"
+    namespace = "com.golfbetterapp.golfbetter"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.cfredericks.golfbetter"
+        applicationId = "com.golfbetterapp.golfbetter"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
