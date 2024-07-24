@@ -8,7 +8,7 @@ import sqlalchemy
 from google.cloud import secretmanager
 import pg8000
 import firebase_admin
-from firebase_admin import credentials, auth
+from firebase_admin import auth
 
 app = Flask(__name__)
 
