@@ -2,7 +2,6 @@ from functools import wraps
 from flask import Flask, request
 import os
 import json
-import requests
 from datetime import date, datetime
 from google.cloud.sql.connector import Connector
 import sqlalchemy
@@ -32,10 +31,10 @@ def validate_token(f):
                 decoded_token = auth.verify_id_token(id_token)
             except Exception as e:
                 print("Exception decoding auth token", e)
-                return jsonify({"error": "Unauthorized"}), 401
+                return json.dumps({"error": "Unauthorized"}), 401
 
         if not decoded_token:
-            return jsonify({"error": "Unauthorized"}), 401
+            return json.dumps({"error": "Unauthorized"}), 401
 
         user_email = decoded_token.get('email')
         return f(user_email, *args, **kwargs)
