@@ -123,8 +123,17 @@ public class UtilsTest {
             }
         };
         final URL url = new URL("foo", "bar", 99, "/foobar", stubUrlHandler);
-        final String actual = Utils.getResponseFromURL(url, x -> x, Duration.ofSeconds(5));
-        // "/r/n" replaced by "/n" by BufferedReader.readLine()
-        assertEquals("abc\ndef", actual);
+        Utils.getResponseFromURL(null, url, x -> x, Duration.ofSeconds(5), false, new Utils.ApiCallback<String>() {
+            @Override
+            public void onSuccess(final String result) {
+                // "/r/n" replaced by "/n" by BufferedReader.readLine()
+                assertEquals("abc\ndef", result);
+            }
+
+            @Override
+            public void onFailure(final Exception e) {
+                assertNull(e);
+            }
+        });
     }
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+        Allow HTTP (i.e. non-HTTPS) traffic on 10.0.2.2 which is the IP
+        that the Android emulator uses to communicate with the host machine.
+     -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

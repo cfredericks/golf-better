@@ -12,4 +12,7 @@
     <string name="bet_round_type_lbl">Round Type:</string>
     <string name="bet_dollar_amount_lbl">Dollar Amount</string>
     <string name="bet_type_lbl">Bet Type:</string>
+    <string name="refresh">Refresh</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_out">Sign out</string>
 </resources>

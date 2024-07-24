@@ -6,11 +6,25 @@
     android:orientation="vertical"
     tools:context=".LeaderboardFragment">
 
-    <Spinner
-        android:id="@+id/tournament_spinner"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="4dp" />
+        android:orientation="horizontal">
+        <Spinner
+            android:id="@+id/tournament_spinner"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity=""
+            android:layout_height="wrap_content"
+            android:paddingBottom="4dp" />
+        <ImageButton
+            android:id="@+id/refresh_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/refresh"
+            android:contentDescription="@string/refresh" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/leaderboard_recycler_view"

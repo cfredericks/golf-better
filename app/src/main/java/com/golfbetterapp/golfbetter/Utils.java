@@ -1,5 +1,7 @@
 package com.golfbetterapp.golfbetter;
 
+import android.content.Context;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -16,66 +19,109 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import lombok.SneakyThrows;
 
 public class Utils {
   static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
+  static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(20);
 
   /**
    * Makes a GET API call and returns a {@link JSONObject} representing the response.
    */
-  public static JSONObject getJSONObjectFromURL(final String urlString) throws IOException, JSONException {
-    return getJSONObjectFromURL(urlString, DEFAULT_TIMEOUT);
+  public static void getJSONObjectFromURL(final Context context, final String urlString, final boolean withToken, final ApiCallback<JSONObject> callback) {
+    getJSONObjectFromURL(context, urlString, DEFAULT_TIMEOUT, withToken, callback);
   }
   /**
-   * Makes a GET API call and returns a {@link JSONObject} representing the response.
+   * Makes a GET API call and returns a {@link JSONArray} representing the response.
    */
-  public static JSONArray getJSONArrayFromURL(final String urlString) throws IOException, JSONException {
-    return getJSONArrayFromURL(urlString, DEFAULT_TIMEOUT);
+  public static void getJSONArrayFromURL(final Context context, final String urlString, final boolean withToken, final ApiCallback<JSONArray> callback) {
+    getJSONArrayFromURL(context, urlString, DEFAULT_TIMEOUT, withToken, callback);
   }
 
   /**
    * Makes a GET API call and returns a {@link JSONObject} representing the response.
    */
-  public static JSONObject getJSONObjectFromURL(final String urlString, final Duration timeout) throws IOException, JSONException {
-    return getResponseFromURL(urlString, JSONObject::new, timeout);
+  public static void getJSONObjectFromURL(final Context context, final String urlString, final Duration timeout, final boolean withToken, final ApiCallback<JSONObject> callback) {
+    getResponseFromURL(context, urlString, JSONObject::new, timeout, withToken, callback);
   }
 
   /**
    * Makes a GET API call and returns a {@link JSONArray} representing the response.
    */
-  public static JSONArray getJSONArrayFromURL(final String urlString, final Duration timeout) throws IOException, JSONException {
-    return getResponseFromURL(urlString, JSONArray::new, timeout);
+  public static void getJSONArrayFromURL(final Context context, final String urlString, final Duration timeout, final boolean withToken, final ApiCallback<JSONArray> callback) {
+    getResponseFromURL(context, urlString, JSONArray::new, timeout, withToken, callback);
   }
 
   /**
    * Makes a GET API call and returns a {@code T} representing the response.
    */
-  public static <T> T getResponseFromURL(final String urlString, final JsonParser<T> respParser) throws IOException, JSONException {
-    return getResponseFromURL(new URL(urlString), respParser, DEFAULT_TIMEOUT);
+  public static <T> void getResponseFromURL(final Context context, final String urlString, final JsonParser<T> respParser, final boolean withToken, final ApiCallback<T> callback) {
+    final URL url;
+    try {
+      url = new URL(urlString);
+    } catch (final MalformedURLException e) {
+      callback.onFailure(e);
+      return;
+    }
+    getResponseFromURL(context, url, respParser, DEFAULT_TIMEOUT, withToken, callback);
   }
 
   /**
    * Makes a GET API call and returns a {@code T} representing the response.
    */
-  public static <T> T getResponseFromURL(final String urlString, final JsonParser<T> respParser, final Duration timeout) throws IOException, JSONException {
-    return getResponseFromURL(new URL(urlString), respParser, timeout);
+  public static <T> void getResponseFromURL(final Context context, final String urlString, final JsonParser<T> respParser, final Duration timeout, final boolean withToken, final ApiCallback<T> callback) {
+    final URL url;
+    try {
+      url = new URL(urlString);
+    } catch (final MalformedURLException e) {
+      callback.onFailure(e);
+      return;
+    }
+    getResponseFromURL(context, url, respParser, timeout, withToken, callback);
   }
 
   /**
    * Makes a GET API call and returns a {@code T} representing the response.
    */
-  public static <T> T getResponseFromURL(final URL url, final JsonParser<T> respParser, final Duration timeout) throws IOException, JSONException {
-    final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-    urlConnection.setRequestMethod("GET");
-    urlConnection.setReadTimeout((int) timeout.toMillis());
-    urlConnection.setConnectTimeout((int) timeout.toMillis());
-    urlConnection.setDoOutput(true);
-    urlConnection.connect();
+  public static <T> void getResponseFromURL(final Context context, final URL url, final JsonParser<T> respParser, final Duration timeout, final boolean withToken, final ApiCallback<T> callback) {
+    if (withToken) {
+      TokenManager.getInstance().getIdToken(context, new TokenManager.IdTokenCallback() {
+        @Override
+        public void onSuccess(final String idToken) {
+          EXECUTOR.execute(() -> makeApiCall(url, respParser, timeout, idToken, callback));
+        }
 
-    return parseResponse(url.openStream(), respParser);
+        @Override
+        public void onFailure(final Exception e) {
+          callback.onFailure(e);
+        }
+      });
+    } else {
+      makeApiCall(url, respParser, timeout, null, callback);
+    }
+  }
+
+  private static <T> void makeApiCall(final URL url, final JsonParser<T> respParser, final Duration timeout, final String idToken, final ApiCallback<T> callback) {
+    try {
+      final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+      urlConnection.setRequestMethod("GET");
+      urlConnection.setReadTimeout((int) timeout.toMillis());
+      urlConnection.setConnectTimeout((int) timeout.toMillis());
+      //urlConnection.setDoOutput(true); // only for POST
+
+      if (idToken != null) {
+        urlConnection.setRequestProperty("Authorization", "Bearer " + idToken);
+      }
+
+      urlConnection.connect();
+      callback.onSuccess(parseResponse(urlConnection.getInputStream(), respParser));
+    } catch (final IOException | JSONException e) {
+      callback.onFailure(e);
+    }
   }
 
   /**
@@ -249,5 +295,10 @@ public class Utils {
       if(Character.digit(s.charAt(i),radix) < 0) return false;
     }
     return true;
+  }
+
+  public interface ApiCallback<T> {
+    void onSuccess(final T result);
+    void onFailure(final Exception e);
   }
 }

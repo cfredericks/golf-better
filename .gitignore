@@ -16,3 +16,4 @@
 local.properties
 /gcp/scripts/key.json
 __pycache__/
+google-services.json
