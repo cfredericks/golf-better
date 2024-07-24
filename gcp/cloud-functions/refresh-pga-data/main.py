@@ -832,6 +832,9 @@ if __name__ == '__main__':
     if args.rounds:
         post_body_json['rounds'] = args.rounds
 
-    request = lambda: None
+    def empty_lambda():
+        return None
+
+    request = empty_lambda
     request.get_json = lambda force, silent: post_body_json
     refresh_data(request)
