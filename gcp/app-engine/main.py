@@ -83,55 +83,6 @@ def get_db_connection():
 
     return pool
 
-
-@app.route(PUBLIC_API_PREFIX + '/tournaments', methods=['GET'])
-def get_tournaments():
-    decoded_token = None
-    if 'Authorization' in request.headers:
-        id_token = request.headers.get('Authorization').split('Bearer ')[1]
-        decoded_token = verify_id_token(id_token)
-    if not decoded_token:
-        return json.dumps({"error": "Unauthorized"}), 401
-    user_email = decoded_token.get('email')
-    print(f"Got request from user: {user_email}")
-
-    query = "SELECT * FROM tournaments where 1=1"
-    tournament_id = request.args.get('id', None)
-    if tournament_id is not None:
-        tid = int(tournament_id)
-        query = query + " and id = " + str(tid)
-    pool = get_db_connection()
-    with pool.connect() as db_conn:
-        records = db_conn.execute(sqlalchemy.text(query)).fetchall()
-        return json.dumps([row._asdict() for row in records], default=json_serial), 200
-
-
-@app.route(PUBLIC_API_PREFIX + '/players', methods=['GET'])
-def get_players():
-    decoded_token = None
-    if 'Authorization' in request.headers:
-        id_token = request.headers.get('Authorization').split('Bearer ')[1]
-        decoded_token = verify_id_token(id_token)
-    if not decoded_token:
-        return json.dumps({"error": "Unauthorized"}), 401
-    user_email = decoded_token.get('email')
-    print(f"Got request from user: {user_email}")
-
-    query = "SELECT * FROM tournament_players where 1=1"
-    tournament_id = request.args.get('tournamentId', None)
-    if tournament_id is not None:
-        tid = int(tournament_id)
-        query = query + " and tournament_id = " + str(tid)
-    player_id = request.args.get('id', None)
-    if player_id is not None:
-        pid = int(player_id)
-        query = query + " and id = " + str(pid)
-    pool = get_db_connection()
-    with pool.connect() as db_conn:
-        records = db_conn.execute(sqlalchemy.text(query)).fetchall()
-        return json.dumps([row._asdict() for row in records], default=json_serial), 200
-
-
 @app.route(PUBLIC_API_PREFIX + '/pga-tournaments', methods=['GET'])
 def get_pga_tournaments():
     decoded_token = None
