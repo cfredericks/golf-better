@@ -9,6 +9,10 @@ To build and run the Android app:
   - Connect a real device (either using USB or "adb tcpip") and run from Android Studio
   - Build an APK and push to a real device
 
+To set up firebase for the first time, you will need to upload the SHA hash of your signing
+certificate under Project Settings >> General. See https://developers.google.com/android/guides/client-auth
+for the command to get the SHA of the debug certificate.
+
 See directories under /gcp for specific READMEs.
 
 # Repo structure
