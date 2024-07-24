@@ -98,7 +98,7 @@ def get_db_connection():
 @app.route(PUBLIC_API_PREFIX + '/pga-tournaments', methods=['GET'])
 @validate_token
 def get_pga_tournaments(user_email):
-    print(f"Got request from user: {user_email}")
+    print(f"Got get_pga_tournaments request from user: {user_email}")
     query = "SELECT data FROM pga_tournaments where 1=1"
     tournament_id = request.args.get('id', None)
     if tournament_id is not None:
@@ -112,7 +112,7 @@ def get_pga_tournaments(user_email):
 @app.route(PUBLIC_API_PREFIX + '/pga-leaderboard-players', methods=['GET'])
 @validate_token
 def get_pga_leaderboard_players(user_email):
-    print(f"Got request from user: {user_email}")
+    print(f"Got get_pga_leaderboard_players request from user: {user_email}")
     query = "SELECT data FROM pga_leaderboard_players where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
@@ -128,7 +128,7 @@ def get_pga_leaderboard_players(user_email):
 @app.route(PUBLIC_API_PREFIX + '/pga-player-scorecards', methods=['GET'])
 @validate_token
 def get_pga_player_scorecards(user_email):
-    print(f"Got request from user: {user_email}")
+    print(f"Got get_pga_player_scorecards request from user: {user_email}")
     query = "SELECT data FROM pga_player_scorecards where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
@@ -140,6 +140,47 @@ def get_pga_player_scorecards(user_email):
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
         return json.dumps([row[0] for row in records], default=json_serial), 200
+
+@app.route(PUBLIC_API_PREFIX + '/users', methods=['POST'])
+@validate_token
+def post_user(user_email):
+    print(f"Got post_user request from user: {user_email}")
+    data = request.get_json(force=True)
+    if data is None:
+        return 'Post body empty', 400
+    if 'email' not in data:
+        return 'Post body must include email', 400
+
+    email = data.get('email').replace("'", "''")
+    id = data.get('id')
+    name = data.get('name')
+    now = datetime.utcnow()
+    if id:
+        id = id.replace("'", "''")
+    if name:
+        name = name.replace("'", "''")
+
+    on_conflict_updates = [
+        f"email = EXCLUDED.email",
+        f"last_login = '{str(now)}'",
+        # Use the actual name instead of EXCLUDED.name since EXCLUDED.name could be the email
+        f"last_updated = (case when users.email != EXCLUDED.email or users.name != '{name}' then EXCLUDED.last_updated else users.last_updated end)"
+    ]
+    if name:
+        # Use the actual name instead of EXCLUDED.name since EXCLUDED.name could be the email
+        on_conflict_updates.append(f"name = '{name}'")
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        db_conn.execute(sqlalchemy.text(f'''
+            insert into users (id, name, email, created, last_updated, last_login)
+            values ('{id or email}', '{name or email}', '{email}', '{str(now)}', '{str(now)}', '{str(now)}')
+            on conflict (id) do update set {", ".join(on_conflict_updates)}
+            '''))
+        db_conn.commit()
+        print(f'Finished updating user id={id or email} email={email}')
+
+    return '', 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

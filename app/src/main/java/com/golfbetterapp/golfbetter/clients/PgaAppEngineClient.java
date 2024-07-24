@@ -12,9 +12,11 @@ import com.golfbetterapp.golfbetter.models.LeaderboardPlayerRoundHole;
 import com.golfbetterapp.golfbetter.models.Player;
 import com.golfbetterapp.golfbetter.models.Tournament;
 import com.golfbetterapp.golfbetter.models.TournamentLeaderboard;
+import com.golfbetterapp.golfbetter.models.User;
 import com.golfbetterapp.golfbetter.models.pga.LeaderboardV3;
 import com.golfbetterapp.golfbetter.models.pga.Schedule;
 import com.golfbetterapp.golfbetter.models.pga.ScorecardV3;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -39,6 +41,7 @@ public class PgaAppEngineClient {
   public static final String TOURNAMENTS_ENDPOINT = APP_SERVER_URL + "/api/v1/pga-tournaments";
   public static final String LEADERBOARD_PLAYERS_ENDPOINT = APP_SERVER_URL + "/api/v1/pga-leaderboard-players?tournamentId=" + TOURNAMENT_FORMAT;
   public static final String PLAYER_SCORECARD_ENDPOINT = APP_SERVER_URL + "/api/v1/pga-player-scorecards?tournamentId=" + TOURNAMENT_FORMAT;
+  public static final String USERS_ENDPOINT = APP_SERVER_URL + "/api/v1/users";
 
   private static final Gson GSON = new GsonBuilder().create();
 
@@ -183,6 +186,23 @@ public class PgaAppEngineClient {
             onFailure(e);
           }
         });
+      }
+
+      @Override
+      public void onFailure(final Exception e) {
+        callback.onFailure(e);
+      }
+    });
+  }
+
+  public static void updateUser(final Context context, final Utils.ApiCallback<Void> callback) {
+    final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    final String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+    final String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+    Utils.postToURL(context, USERS_ENDPOINT, GSON.toJson(User.builder().id(userId).name(name).email(email).build()), null, true, new Utils.ApiCallback<String>() {
+      @Override
+      public void onSuccess(final String result) {
+        // do nothing
       }
 
       @Override

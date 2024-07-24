@@ -1,6 +1,7 @@
 package com.golfbetterapp.golfbetter;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,9 +11,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -71,6 +74,20 @@ public class Utils {
   }
 
   /**
+   * Makes a POST API call and returns a {@code T} representing the response.
+   */
+  public static <T> void postToURL(final Context context, final String urlString, final String jsonData, final JsonParser<T> respParser, final boolean withToken, final ApiCallback<T> callback) {
+    final URL url;
+    try {
+      url = new URL(urlString);
+    } catch (final MalformedURLException e) {
+      callback.onFailure(e);
+      return;
+    }
+    postToURL(context, url, jsonData, respParser, DEFAULT_TIMEOUT, withToken, callback);
+  }
+
+  /**
    * Makes a GET API call and returns a {@code T} representing the response.
    */
   public static <T> void getResponseFromURL(final Context context, final String urlString, final JsonParser<T> respParser, final Duration timeout, final boolean withToken, final ApiCallback<T> callback) {
@@ -92,7 +109,7 @@ public class Utils {
       TokenManager.getInstance().getIdToken(context, new TokenManager.IdTokenCallback() {
         @Override
         public void onSuccess(final String idToken) {
-          EXECUTOR.execute(() -> makeApiCall(url, respParser, timeout, idToken, callback));
+          EXECUTOR.execute(() -> makeGetRequest(url, respParser, timeout, idToken, callback));
         }
 
         @Override
@@ -101,17 +118,37 @@ public class Utils {
         }
       });
     } else {
-      makeApiCall(url, respParser, timeout, null, callback);
+      makeGetRequest(url, respParser, timeout, null, callback);
     }
   }
 
-  private static <T> void makeApiCall(final URL url, final JsonParser<T> respParser, final Duration timeout, final String idToken, final ApiCallback<T> callback) {
+  /**
+   * Makes a POST API call and returns a {@code T} representing the response.
+   */
+  public static <T> void postToURL(final Context context, final URL url, final String jsonData, final JsonParser<T> respParser, final Duration timeout, final boolean withToken, final ApiCallback<T> callback) {
+    if (withToken) {
+      TokenManager.getInstance().getIdToken(context, new TokenManager.IdTokenCallback() {
+        @Override
+        public void onSuccess(final String idToken) {
+          EXECUTOR.execute(() -> makePostRequest(url, jsonData, respParser, timeout, idToken, callback));
+        }
+
+        @Override
+        public void onFailure(final Exception e) {
+          callback.onFailure(e);
+        }
+      });
+    } else {
+      makeGetRequest(url, respParser, timeout, null, callback);
+    }
+  }
+
+  private static <T> void makeGetRequest(final URL url, final JsonParser<T> respParser, final Duration timeout, final String idToken, final ApiCallback<T> callback) {
     try {
       final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
       urlConnection.setRequestMethod("GET");
       urlConnection.setReadTimeout((int) timeout.toMillis());
       urlConnection.setConnectTimeout((int) timeout.toMillis());
-      //urlConnection.setDoOutput(true); // only for POST
 
       if (idToken != null) {
         urlConnection.setRequestProperty("Authorization", "Bearer " + idToken);
@@ -119,6 +156,42 @@ public class Utils {
 
       urlConnection.connect();
       callback.onSuccess(parseResponse(urlConnection.getInputStream(), respParser));
+    } catch (final IOException | JSONException e) {
+      callback.onFailure(e);
+    }
+  }
+
+  private static <T> void makePostRequest(final URL url, final String jsonData, final JsonParser<T> respParser, final Duration timeout, final String idToken, final ApiCallback<T> callback) {
+    try {
+      final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+      urlConnection.setRequestMethod("POST");
+      urlConnection.setRequestProperty("Content-Type", "application/json");
+      urlConnection.setReadTimeout((int) timeout.toMillis());
+      urlConnection.setConnectTimeout((int) timeout.toMillis());
+
+      if (idToken != null) {
+        urlConnection.setRequestProperty("Authorization", "Bearer " + idToken);
+      }
+
+      if (jsonData != null) {
+        urlConnection.setDoOutput(true);
+        try (final OutputStream os = urlConnection.getOutputStream()) {
+          final byte[] dataBytes = jsonData.getBytes(StandardCharsets.UTF_8);
+          os.write(dataBytes, 0, dataBytes.length);
+        }
+      }
+
+      if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+        if (respParser != null) {
+          callback.onSuccess(parseResponse(urlConnection.getInputStream(), respParser));
+        } else {
+          callback.onSuccess(null);
+        }
+      } else {
+        callback.onFailure(
+            new IllegalStateException(
+              String.format("Error posting user, got status code: %d", urlConnection.getResponseCode())));
+      }
     } catch (final IOException | JSONException e) {
       callback.onFailure(e);
     }
