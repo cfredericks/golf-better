@@ -1,6 +1,9 @@
 package com.golfbetterapp.golfbetter;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -19,6 +22,7 @@ import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,6 +41,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class LeaderboardFragment extends Fragment {
+  public static final String REFRESH_TOURNAMENTS_INTENT = "REFRESH_TOURNAMENTS";
+
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private Spinner tournamentSpinner;
   private RecyclerView leaderboardRecyclerView;
@@ -45,9 +51,23 @@ public class LeaderboardFragment extends Fragment {
   private List<Tournament> tournaments;
   private TournamentLeaderboard leaderboard;
 
+  private final BroadcastReceiver REFRESH_RECEIVER = new BroadcastReceiver() {
+    @Override
+    public void onReceive(final Context context, final Intent intent) {
+      if (REFRESH_TOURNAMENTS_INTENT.equals(intent.getAction())) {
+        // Handle the refresh action
+        fetchTournamentData();
+      }
+    }
+  };
+
   @Override
   public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
     final View view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
+
+    // Register the local broadcast receiver
+    LocalBroadcastManager.getInstance(requireContext()).registerReceiver(
+        REFRESH_RECEIVER, new IntentFilter(REFRESH_TOURNAMENTS_INTENT));
 
     tournaments = new ArrayList<>();
 
@@ -82,9 +102,14 @@ public class LeaderboardFragment extends Fragment {
       }
     });
 
-    //fetchTournamentData();
-
     return view;
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    // Unregister the local broadcast receiver
+    LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(REFRESH_RECEIVER);
   }
 
   private void fetchTournamentData() {
@@ -98,9 +123,9 @@ public class LeaderboardFragment extends Fragment {
 
           // Get active or next tournament to set default selection
           int activeTournamentIdx = -1;
-          int nextTournamentIdx = -1;
+          int prevTournamentIdx = -1;
           Tournament activeTournament = null;
-          Tournament nextTournament = null;
+          Tournament prevTournament = null;
           LocalDate today = LocalDate.now();
           for (int i = 0; i < tournaments.size(); i++) {
             final Tournament tournament = tournaments.get(i);
@@ -112,17 +137,17 @@ public class LeaderboardFragment extends Fragment {
               activeTournamentIdx = i;
             }
 
-            if (tournament.getStartDate() != null && tournament.getEndDate() != null && tournament.getStartDate().isAfter(today) && nextTournament == null) {
-              nextTournament = tournament;
-              nextTournamentIdx = i;
+            if (tournament.getStartDate() != null && tournament.getEndDate() != null && tournament.getEndDate().isBefore(today) && (prevTournament == null || tournament.getEndDate().isAfter(prevTournament.getStartDate()))) {
+              prevTournament = tournament;
+              prevTournamentIdx = i;
             }
           }
           Log.i("LeaderboardFragment", "Got tournament API response: " + tournaments);
           Log.i("LeaderboardFragment", "Active tournament: " + activeTournament);
-          Log.i("LeaderboardFragment", "Next tournament: " + nextTournament);
+          Log.i("LeaderboardFragment", "Prev tournament: " + prevTournament);
           if (getActivity() != null) {
             final int finalActiveTournamentIdx = activeTournamentIdx;
-            final int finalNextTournamentIdx = nextTournamentIdx;
+            final int finalNextTournamentIdx = prevTournamentIdx;
             getActivity().runOnUiThread(() -> {
               tournamentAdapter.updateTournaments(tournaments);
               tournamentSpinner.setSelection(finalActiveTournamentIdx >= 0 ? finalActiveTournamentIdx :

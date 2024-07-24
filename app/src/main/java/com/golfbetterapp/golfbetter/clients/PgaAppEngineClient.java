@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 public class PgaAppEngineClient {
   public static final String TOURNAMENT_FORMAT = "{tournament}";
 
-  //public static final String APP_SERVER_URL = "https://stoked-depth-428423-j7.uc.r.appspot.com";
-  public static final String APP_SERVER_URL = "http://10.0.2.2:8080"; // For local dev
+  public static final String APP_SERVER_URL = "https://stoked-depth-428423-j7.uc.r.appspot.com";
+  // public static final String APP_SERVER_URL = "http://10.0.2.2:8080"; // For local dev
   public static final String TOURNAMENTS_ENDPOINT = APP_SERVER_URL + "/api/v1/pga-tournaments";
   public static final String LEADERBOARD_PLAYERS_ENDPOINT = APP_SERVER_URL + "/api/v1/pga-leaderboard-players?tournamentId=" + TOURNAMENT_FORMAT;
   public static final String PLAYER_SCORECARD_ENDPOINT = APP_SERVER_URL + "/api/v1/pga-player-scorecards?tournamentId=" + TOURNAMENT_FORMAT;

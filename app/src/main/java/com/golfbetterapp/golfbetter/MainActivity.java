@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -147,6 +148,10 @@ public class MainActivity extends AppCompatActivity {
     findViewById(R.id.current_user).setVisibility(View.VISIBLE);
     findViewById(R.id.content_main_container).setVisibility(View.VISIBLE);
     ((TextView)findViewById(R.id.current_user)).setText(signedInUser);
+
+    // Signal tournament refresh to LeaderboardFragment
+    final Intent intent = new Intent(LeaderboardFragment.REFRESH_TOURNAMENTS_INTENT);
+    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
   }
 
   public void handleSignOut() {
