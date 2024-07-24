@@ -161,7 +161,7 @@ def post_user(user_email):
         name = name.replace("'", "''")
 
     on_conflict_updates = [
-        f"email = EXCLUDED.email",
+        "email = EXCLUDED.email",
         f"last_login = '{str(now)}'",
         # Use the actual name instead of EXCLUDED.name since EXCLUDED.name could be the email
         f"last_updated = (case when users.email != EXCLUDED.email or users.name != '{name}' then EXCLUDED.last_updated else users.last_updated end)"
