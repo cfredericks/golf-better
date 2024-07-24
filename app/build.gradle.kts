@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.androidApplication)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -39,17 +40,15 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.recyclerview)
     implementation(libs.gson)
-    implementation(libs.credentials)
-    implementation(libs.credentials.play.services.auth)
+    implementation(libs.play.services.auth)
     implementation(libs.googleid)
-    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ui.auth)
     implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     testImplementation(libs.json)
     testImplementation(libs.mockito)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

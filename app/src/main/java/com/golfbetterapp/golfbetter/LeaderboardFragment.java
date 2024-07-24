@@ -75,50 +75,67 @@ public class LeaderboardFragment extends Fragment {
       }
     });
 
-    fetchTournamentData();
+    view.findViewById(R.id.refresh_button).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(final View v) {
+        fetchTournamentData();
+      }
+    });
+
+    //fetchTournamentData();
 
     return view;
   }
 
   private void fetchTournamentData() {
     executorService.execute(() -> {
-      tournaments = PgaAppEngineClient.getTournaments();
-      Log.i("test", "Got PG tournaments: " + tournaments);
-      tournaments.sort(Comparator.comparing(Tournament::getStartDate));
+      PgaAppEngineClient.getTournaments(getContext(), new Utils.ApiCallback<List<Tournament>>() {
+        @Override
+        public void onSuccess(final List<Tournament> result) {
+          tournaments = result;
+          Log.i("LeaderboardFragment", "Got PG tournaments: " + tournaments);
+          tournaments.sort(Comparator.comparing(Tournament::getStartDate));
 
-      // Get active or next tournament to set default selection
-      int activeTournamentIdx = -1;
-      int nextTournamentIdx = -1;
-      Tournament activeTournament = null;
-      Tournament nextTournament = null;
-      LocalDate today = LocalDate.now();
-      for (int i = 0; i < tournaments.size(); i++) {
-        final Tournament tournament = tournaments.get(i);
-        if (tournament.getIsInProgress() != null && tournament.getIsInProgress()) {
-          activeTournament = tournament;
-          activeTournamentIdx = i;
-        } else if (tournament.getStartDate() != null && tournament.getEndDate() != null && !tournament.getStartDate().isAfter(today) && !tournament.getEndDate().isBefore(today)) {
-          activeTournament = tournament;
-          activeTournamentIdx = i;
+          // Get active or next tournament to set default selection
+          int activeTournamentIdx = -1;
+          int nextTournamentIdx = -1;
+          Tournament activeTournament = null;
+          Tournament nextTournament = null;
+          LocalDate today = LocalDate.now();
+          for (int i = 0; i < tournaments.size(); i++) {
+            final Tournament tournament = tournaments.get(i);
+            if (tournament.getIsInProgress() != null && tournament.getIsInProgress()) {
+              activeTournament = tournament;
+              activeTournamentIdx = i;
+            } else if (tournament.getStartDate() != null && tournament.getEndDate() != null && !tournament.getStartDate().isAfter(today) && !tournament.getEndDate().isBefore(today)) {
+              activeTournament = tournament;
+              activeTournamentIdx = i;
+            }
+
+            if (tournament.getStartDate() != null && tournament.getEndDate() != null && tournament.getStartDate().isAfter(today) && nextTournament == null) {
+              nextTournament = tournament;
+              nextTournamentIdx = i;
+            }
+          }
+          Log.i("LeaderboardFragment", "Got tournament API response: " + tournaments);
+          Log.i("LeaderboardFragment", "Active tournament: " + activeTournament);
+          Log.i("LeaderboardFragment", "Next tournament: " + nextTournament);
+          if (getActivity() != null) {
+            final int finalActiveTournamentIdx = activeTournamentIdx;
+            final int finalNextTournamentIdx = nextTournamentIdx;
+            getActivity().runOnUiThread(() -> {
+              tournamentAdapter.updateTournaments(tournaments);
+              tournamentSpinner.setSelection(finalActiveTournamentIdx >= 0 ? finalActiveTournamentIdx :
+                  finalNextTournamentIdx >= 0 ? finalNextTournamentIdx : tournaments.size() - 1);
+            });
+          }
         }
 
-        if (tournament.getStartDate() != null && tournament.getEndDate() != null && tournament.getStartDate().isAfter(today) && nextTournament == null) {
-          nextTournament = tournament;
-          nextTournamentIdx = i;
+        @Override
+        public void onFailure(final Exception e) {
+          Log.e("LeaderboardFragment", "Error reading tournaments", e);
         }
-      }
-      Log.i("LeaderboardFragment", "Got tournament API response: " + tournaments);
-      Log.i("LeaderboardFragment", "Active tournament: " + activeTournament);
-      Log.i("LeaderboardFragment", "Next tournament: " + nextTournament);
-      if (getActivity() != null) {
-        final int finalActiveTournamentIdx = activeTournamentIdx;
-        final int finalNextTournamentIdx = nextTournamentIdx;
-        getActivity().runOnUiThread(() -> {
-          tournamentAdapter.updateTournaments(tournaments);
-          tournamentSpinner.setSelection(finalActiveTournamentIdx >= 0 ? finalActiveTournamentIdx :
-              finalNextTournamentIdx >= 0 ? finalNextTournamentIdx : tournaments.size() - 1);
-        });
-      }
+      });
     });
   }
 
@@ -130,13 +147,22 @@ public class LeaderboardFragment extends Fragment {
         });
       }
 
-      leaderboard = PgaAppEngineClient.getLeaderboard(tournamentId);
+      PgaAppEngineClient.getLeaderboard(tournamentId, getContext(), new Utils.ApiCallback<TournamentLeaderboard>() {
+        @Override
+        public void onSuccess(final TournamentLeaderboard result) {
+          leaderboard = result;
+          if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+              leaderboardAdapter.updateLeaderboard(leaderboard);
+            });
+          }
+        }
 
-      if (getActivity() != null) {
-        getActivity().runOnUiThread(() -> {
-          leaderboardAdapter.updateLeaderboard(leaderboard);
-        });
-      }
+        @Override
+        public void onFailure(final Exception e) {
+          Log.e("LeaderboardFragment", "Error querying leaderboard", e);
+        }
+      });
     });
   }
 

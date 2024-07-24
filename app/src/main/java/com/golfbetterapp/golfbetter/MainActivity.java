@@ -1,11 +1,8 @@
 package com.golfbetterapp.golfbetter;
 
-import androidx.annotation.NonNull;
-import androidx.credentials.Credential;
-import androidx.credentials.CredentialManager;
+import androidx.annotation.Nullable;
 
-import androidx.credentials.exceptions.GetCredentialException;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,29 +12,25 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.credentials.CredentialManagerCallback;
-import androidx.credentials.CustomCredential;
-import androidx.credentials.GetCredentialRequest;
-import androidx.credentials.GetCredentialResponse;
-import androidx.credentials.PasswordCredential;
-import androidx.credentials.PublicKeyCredential;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.golfbetterapp.golfbetter.databinding.ActivityMainBinding;
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.golfbetterapp.golfbetter.databinding.ActivityMainBinding;
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-import java.util.UUID;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-  private static final String ANDROID_CLIENT_ID = "901053117124-0i8ecbbme8cre1hl3287ddg19kr2u1mp.apps.googleusercontent.com";
-  private static final String WEB_CLIENT_ID = "901053117124-pv70p11m4vdl7qkmphqbgf6e9a8ui8pn.apps.googleusercontent.com";
-  private CredentialManager credentialManager;
-
+  private static final int RC_SIGN_IN = 123;
   private AppBarConfiguration appBarConfiguration;
 
   private String signedInUser;
@@ -46,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    credentialManager = CredentialManager.create(this);
+    FirebaseApp.initializeApp(this);
 
     final ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
     setContentView(binding.getRoot());
@@ -113,77 +106,38 @@ public class MainActivity extends AppCompatActivity {
     return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp();
   }
 
-  private void signIn() {
-    final GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-        .setFilterByAuthorizedAccounts(false)
-        .setServerClientId(WEB_CLIENT_ID)
-        .setAutoSelectEnabled(true)
-        .setNonce(UUID.randomUUID().toString())
-        .build();
-    final GetCredentialRequest request = new GetCredentialRequest.Builder()
-        .addCredentialOption(googleIdOption)
-        .build();
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
 
-    credentialManager.getCredentialAsync(
-        this,
-        request,
-        null,
-        getMainExecutor(),
-        new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
-          @Override
-          public void onResult(final GetCredentialResponse resp) {
-            Log.w("MainActivity", "signInResult:success: " + resp);
-            handleSignIn(resp);
-          }
-
-          @Override
-          public void onError(@NonNull final GetCredentialException e) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-              Log.w("MainActivity", "signInResult:failed", e);
-            }
-          }
-        });
+    if (requestCode == RC_SIGN_IN) {
+      final IdpResponse response = IdpResponse.fromResultIntent(data);
+      if (resultCode == RESULT_OK) {
+        // Successfully signed in
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        Log.i("MainActivity", "Got firebase user: " + user.getEmail());
+        handleSignIn(user.getEmail());
+        //updateUI(user);
+      } else {
+        // Sign-in failed
+        Log.e("MainActivity", "Firebase login failed");
+        //updateUI(null);
+      }
+    }
   }
 
-  public void handleSignIn(final GetCredentialResponse result) {
-    // Handle the successfully returned credential.
-    final Credential credential = result.getCredential();
-    if (credential instanceof PublicKeyCredential) {
-      final String responseJson = ((PublicKeyCredential) credential).getAuthenticationResponseJson();
-      Log.i("MainActivity", "Got PublicKeyCredential: " + responseJson);
-      // Share responseJson i.e. a GetCredentialResponse on your server to validate and authenticate
-    } else if (credential instanceof PasswordCredential) {
-      final String username = ((PasswordCredential) credential).getId();
-      final String password = ((PasswordCredential) credential).getPassword();
-      Log.i("MainActivity", "PasswordCredential: user=" + username + ", pw=" + password);
-      handleSignIn(username);
-      return;
-    } else if (credential instanceof CustomCredential) {
-      if (GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {
-        try {
-          // Use googleIdTokenCredential and extract id to validate and
-          // authenticate on your server.
-          final GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential
-              .createFrom(credential.getData());
-          handleSignIn(googleIdTokenCredential.getId());
-          Log.e("MainActivity", "Got GoogleIdTokenCredential: id=" + googleIdTokenCredential.getId() + ", name=" + googleIdTokenCredential.getDisplayName() + ", data=" + googleIdTokenCredential.getData());
-          return;
-        } catch (final Exception e) {
-          Log.e("MainActivity", "Received an invalid google id token response for data: " + credential.getData(), e);
-        }
-      } else {
-        Log.e("MainActivity", "Unexpected type of custom credential: " + credential.getType() + "(" + credential.getClass().getCanonicalName() + "), data=" + credential);
-      }
-    } else {
-      // Catch any unrecognized credential type here.
-      Log.e("MainActivity", "Unexpected type of credential: " + credential.getType() + "(" + credential.getClass().getCanonicalName() + "), data=" + credential);
-    }
+  private void signIn() {
+    // Choose authentication providers
+    final List<AuthUI.IdpConfig> providers = Arrays.asList(
+        new AuthUI.IdpConfig.GoogleBuilder().build()
+    );
 
-    if (signedInUser == null) {
-      Log.e("MainActivity", "Unable to extract username");
-    }
-
-    handleSignOut();
+    // Create and launch sign-in intent
+    final Intent signInIntent = AuthUI.getInstance()
+        .createSignInIntentBuilder()
+        .setAvailableProviders(providers)
+        .build();
+    startActivityForResult(signInIntent, RC_SIGN_IN);
   }
 
   public void handleSignIn(final String user) {

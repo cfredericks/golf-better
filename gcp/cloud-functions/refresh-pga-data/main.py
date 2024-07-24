@@ -108,6 +108,7 @@ def refresh_data(request):
     player_ids = None
     rounds = None
     dry_run = False
+    all_tournaments = False
     if request is not None:
         request_json = request.get_json(silent=True, force=True)
         if request_json is not None:
@@ -121,6 +122,8 @@ def refresh_data(request):
                 rounds = request_json.get('rounds')
             if 'dryRun' in request_json:
                 dry_run = str(request_json.get('dryRun')).lower() == 'true'
+            if 'allTournaments' in request_json:
+                all_tournaments = str(request_json.get('allTournaments')).lower() == 'true'
 
     print(f"Refreshing PGA data for {tournament_ids if tournament_ids else 'current (if any) or previous tournament'} for data types: {data_types}...")
 
@@ -129,22 +132,30 @@ def refresh_data(request):
     # Load tournament ID if needed
     schedule_data = None
     if not tournament_ids:
-        print('Querying tournament schedule to find current (or previous) tournament IDs...')
+        print('Querying tournament schedule to get tournament IDs...')
         schedule_data = query_schedule()
 
-        # Check for current tournament
-        if 'upcoming' in schedule_data and len(schedule_data['upcoming']) > 0:
-            current_tourn = [t for t in schedule_data['upcoming'][0]['tournaments'] if last_updated >= dt.fromtimestamp(t['startDate'] / 1000.0)]
-            if len(current_tourn) > 0:
-                tournament_ids = [c['id'] for c in current_tourn]
-                print(f"Using current tournament(s): {tournament_ids}")
+        if all_tournaments:
+            tournament_ids = []
+            for group in schedule_data['upcoming']:
+                tournament_ids.extend([t['id'] for t in group['tournaments']])
+            for group in schedule_data['completed']:
+                tournament_ids.extend([t['id'] for t in group['tournaments']])
+            print(f"Using all tournament(s): {tournament_ids}")
+        else:
+            # Check for current tournament
+            if 'upcoming' in schedule_data and len(schedule_data['upcoming']) > 0:
+                current_tourn = [t for t in schedule_data['upcoming'][0]['tournaments'] if last_updated >= dt.fromtimestamp(t['startDate'] / 1000.0)]
+                if len(current_tourn) > 0:
+                    tournament_ids = [c['id'] for c in current_tourn]
+                    print(f"Using current tournament(s): {tournament_ids}")
 
-        # Use previous tournament
-        if not tournament_ids and 'completed' in schedule_data and len(schedule_data['completed']) > 0:
-            prev_tourn = schedule_data['completed'][-1]['tournaments'][-1]
-            if prev_tourn is not None:
-                tournament_ids = [prev_tourn['id']]
-                print(f"Using previous tournament(s): {tournament_ids}")
+            # Use previous tournament
+            if not tournament_ids and 'completed' in schedule_data and len(schedule_data['completed']) > 0:
+                prev_tourn = schedule_data['completed'][-1]['tournaments'][-1]
+                if prev_tourn is not None:
+                    tournament_ids = [prev_tourn['id']]
+                    print(f"Using previous tournament(s): {tournament_ids}")
 
     if not tournament_ids:
         print('No current/previous tournament(s) found. Please specify --tournament-id')
@@ -220,6 +231,8 @@ def refresh_data(request):
         if SHOT_DETAILS_TYPE in data_types and not rounds_to_query:
             print(f'Querying leaderboard for {tournament_id} to find player IDs or rounds...')
             leaderboard_data = query_leaderboard_v3(tournament_id)
+            if leaderboard_data is None:
+                continue
             current_round_str = leaderboard_data['leaderboardRoundHeader']
             if current_round_str is not None and len(current_round_str) == 2 and current_round_str[0] == 'R':
                 current_round = int(current_round_str[1])
@@ -236,6 +249,8 @@ def refresh_data(request):
             if not leaderboard_data:
                 print(f'Querying leaderboard for {tournament_id} to find player IDs...')
                 leaderboard_data = query_leaderboard_v3(tournament_id)
+                if leaderboard_data is None:
+                    continue
             # Filter out projected cut and actual cut line "players'
             player_ids_to_query = [p['id'] for p in leaderboard_data['players'] if '-' not in p['id']]
             print(f'Using player IDs: {player_ids_to_query}')
@@ -252,6 +267,8 @@ def refresh_data(request):
             if data_type == LEADERBOARD_TYPE:
                 if not leaderboard_data:
                     leaderboard_data = query_leaderboard_v3(tournament_id)
+                    if leaderboard_data is None:
+                        continue
                 data = leaderboard_data
                 db_tables.append('pga_leaderboard_players')
                 db_cols.append(['id', 'tournament_id', 'player_id', 'last_updated', 'data'])
@@ -288,6 +305,8 @@ def refresh_data(request):
                 to_upsert = []
                 for player_id in player_ids_to_query:
                     scorecard = query_scorecard_v3(tournament_id, player_id)
+                    if scorecard is None:
+                        continue
                     data.append(scorecard)
                     to_upsert.append((
                         "'" + tournament_id + '-' + scorecard['player']['id'] + "'",
@@ -464,7 +483,14 @@ def query_leaderboard_v3(tournament_id):
     }
 
     response = requests.post(GRAPHQL_ENDPOINT, headers=GRAPHQL_HEADERS, json=data)
-    return process_compressed(response.json()['data']['leaderboardCompressedV3']['payload'])
+    try:
+        return process_compressed(response.json()['data']['leaderboardCompressedV3']['payload'])
+    except Exception as e:
+        if 'errors' in response.json() and any([e['errorType'] == 'AccessDeniedException' for e in response.json()['errors']]):
+            print(f"Access denied querying query_leaderboard_v3 for tid='{tournament_id}'")
+            return None
+        print("Error processing query_leaderboard_v3 for tid='" + tournament_id + "': " + json.dumps(response.json()), e)
+        raise e
 
 def query_tournaments(tournament_ids):
     data = {
@@ -752,7 +778,10 @@ def query_scorecard_v3(tournament_id, player_id):
     try:
         return process_compressed(response.json()['data']['scorecardCompressedV3']['payload'])
     except Exception as e:
-        print(f'Error when parsing scorecard response for tid={tournament_id}, pid={player_id}: {response.json()}', e)
+        if 'errors' in response.json() and any([e['errorType'] == 'AccessDeniedException' for e in response.json()['errors']]):
+            print(f"Access denied querying query_scorecard_v3 for tid='{tournament_id}'")
+            return None
+        print(f'Error when parsing query_scorecard_v3 response for tid={tournament_id}, pid={player_id}: {response.json()}', e)
         raise e
 
 # For running locally
@@ -779,10 +808,16 @@ if __name__ == '__main__':
                         help="Whether to write results to DB or only print results",
                         action=argparse.BooleanOptionalAction,
                         default=False)
+    parser.add_argument("-a",
+                        "--all-tournaments",
+                        help="Whether to process all tournaments or not (only relevant for types related to tournaments)",
+                        action=argparse.BooleanOptionalAction,
+                        default=False)
     args = parser.parse_args()
 
     post_body_json = {
-        'dryRun': not args.write
+        'dryRun': not args.write,
+        'allTournaments': args.all_tournaments
     }
     if args.data_types:
         missing_data_types = [dt for dt in args.data_types if dt not in ALL_DATA_TYPES]

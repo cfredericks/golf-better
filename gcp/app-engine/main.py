@@ -7,14 +7,26 @@ from google.cloud.sql.connector import Connector
 import sqlalchemy
 from google.cloud import secretmanager
 import pg8000
+import firebase_admin
+from firebase_admin import credentials, auth
 
 app = Flask(__name__)
+
+firebase_admin.initialize_app()
 
 DEFAULT_PROJECT_ID = 'stoked-depth-428423-j7'
 DEFAULT_VERSION_ID = 'latest'
 
 PUBLIC_API_PREFIX = '/api/v1'
 PRIVATE_API_PREFIX = '/protected/api/v1'
+
+def verify_id_token(id_token):
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+        return decoded_token
+    except Exception as e:
+        print("Exception decoding auth token", e)
+        return None
 
 def get_gsm_secret(secret_id, project_id=DEFAULT_PROJECT_ID, version_id=DEFAULT_VERSION_ID):
     client = secretmanager.SecretManagerServiceClient()
@@ -74,6 +86,15 @@ def get_db_connection():
 
 @app.route(PUBLIC_API_PREFIX + '/tournaments', methods=['GET'])
 def get_tournaments():
+    decoded_token = None
+    if 'Authorization' in request.headers:
+        id_token = request.headers.get('Authorization').split('Bearer ')[1]
+        decoded_token = verify_id_token(id_token)
+    if not decoded_token:
+        return json.dumps({"error": "Unauthorized"}), 401
+    user_email = decoded_token.get('email')
+    print(f"Got request from user: {user_email}")
+
     query = "SELECT * FROM tournaments where 1=1"
     tournament_id = request.args.get('id', None)
     if tournament_id is not None:
@@ -82,11 +103,20 @@ def get_tournaments():
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
-        return json.dumps([row._asdict() for row in records], default=json_serial)
+        return json.dumps([row._asdict() for row in records], default=json_serial), 200
 
 
 @app.route(PUBLIC_API_PREFIX + '/players', methods=['GET'])
 def get_players():
+    decoded_token = None
+    if 'Authorization' in request.headers:
+        id_token = request.headers.get('Authorization').split('Bearer ')[1]
+        decoded_token = verify_id_token(id_token)
+    if not decoded_token:
+        return json.dumps({"error": "Unauthorized"}), 401
+    user_email = decoded_token.get('email')
+    print(f"Got request from user: {user_email}")
+
     query = "SELECT * FROM tournament_players where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
@@ -99,11 +129,21 @@ def get_players():
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
-        return json.dumps([row._asdict() for row in records], default=json_serial)
+        return json.dumps([row._asdict() for row in records], default=json_serial), 200
 
 
 @app.route(PUBLIC_API_PREFIX + '/pga-tournaments', methods=['GET'])
 def get_pga_tournaments():
+    decoded_token = None
+    if 'Authorization' in request.headers:
+        id_token = request.headers.get('Authorization').split('Bearer ')[1]
+        decoded_token = verify_id_token(id_token)
+        print(decoded_token)
+    if not decoded_token:
+        return json.dumps({"error": "Unauthorized"}), 401
+    user_email = decoded_token.get('email')
+    print(f"Got request from user: {user_email}")
+
     query = "SELECT data FROM pga_tournaments where 1=1"
     tournament_id = request.args.get('id', None)
     if tournament_id is not None:
@@ -111,11 +151,20 @@ def get_pga_tournaments():
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
-        return json.dumps([row[0] for row in records], default=json_serial)
+        return json.dumps([row[0] for row in records], default=json_serial), 200
 
 
 @app.route(PUBLIC_API_PREFIX + '/pga-leaderboard-players', methods=['GET'])
 def get_pga_leaderboard_players():
+    decoded_token = None
+    if 'Authorization' in request.headers:
+        id_token = request.headers.get('Authorization').split('Bearer ')[1]
+        decoded_token = verify_id_token(id_token)
+    if not decoded_token:
+        return json.dumps({"error": "Unauthorized"}), 401
+    user_email = decoded_token.get('email')
+    print(f"Got request from user: {user_email}")
+
     query = "SELECT data FROM pga_leaderboard_players where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
@@ -126,10 +175,19 @@ def get_pga_leaderboard_players():
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
-        return json.dumps([row[0] for row in records], default=json_serial)
+        return json.dumps([row[0] for row in records], default=json_serial), 200
 
 @app.route(PUBLIC_API_PREFIX + '/pga-player-scorecards', methods=['GET'])
 def get_pga_player_scorecards():
+    decoded_token = None
+    if 'Authorization' in request.headers:
+        id_token = request.headers.get('Authorization').split('Bearer ')[1]
+        decoded_token = verify_id_token(id_token)
+    if not decoded_token:
+        return json.dumps({"error": "Unauthorized"}), 401
+    user_email = decoded_token.get('email')
+    print(f"Got request from user: {user_email}")
+
     query = "SELECT data FROM pga_player_scorecards where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
@@ -140,10 +198,19 @@ def get_pga_player_scorecards():
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
-        return json.dumps([row[0] for row in records], default=json_serial)
+        return json.dumps([row[0] for row in records], default=json_serial), 200
 
 @app.route(PRIVATE_API_PREFIX + '/refreshTournaments', methods=['POST'])
 def refresh_tournaments():
+    decoded_token = None
+    if 'Authorization' in request.headers:
+        id_token = request.headers.get('Authorization').split('Bearer ')[1]
+        decoded_token = verify_id_token(id_token)
+    if not decoded_token:
+        return json.dumps({"error": "Unauthorized"}), 401
+    user_email = decoded_token.get('email')
+    print(f"Got request from user: {user_email}")
+
     print("Querying Tournaments API...")
     sports_data_api_key = get_gsm_secret('sports-data-api-key')
     tournaments_response = requests.get("https://api.sportsdata.io/golf/v2/json/Tournaments?key=" + sports_data_api_key)
