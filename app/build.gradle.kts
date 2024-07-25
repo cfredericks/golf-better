@@ -17,8 +17,44 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Signing configs for github CI builds
+    signingConfigs {
+        if (System.getenv("CI") != null) {
+            fun createOrUpdateSigningConfig(name: String, storeFile: String, storePassword: String, keyAlias: String, keyPassword: String) {
+                val config = signingConfigs.findByName(name) ?: signingConfigs.create(name)
+                config.storeFile = file(storeFile)
+                config.storePassword = storePassword
+                config.keyAlias = keyAlias
+                config.keyPassword = keyPassword
+            }
+
+            createOrUpdateSigningConfig(
+                name = "debug",
+                storeFile = "debug.keystore",
+                storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD"),
+                keyAlias = System.getenv("DEBUG_KEY_ALIAS"),
+                keyPassword = System.getenv("DEBUG_KEY_PASSWORD")
+            )
+            createOrUpdateSigningConfig(
+                name = "release",
+                storeFile = "release.keystore",
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD"),
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS"),
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            )
+        }
+    }
+
     buildTypes {
+        debug {
+            if (System.getenv("CI") != null) {
+                signingConfig = signingConfigs.getByName("debug")
+            }
+        }
         release {
+            if (System.getenv("CI") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
