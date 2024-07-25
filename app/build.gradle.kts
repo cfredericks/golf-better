@@ -20,13 +20,13 @@ android {
     // Signing configs for github CI builds
     signingConfigs {
         if (System.getenv("CI") != null) {
-            create("debug") {
+            getByName("debug") {
                 storeFile = file("debug.keystore")
                 storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("DEBUG_KEY_ALIAS")
                 keyPassword = System.getenv("DEBUG_KEY_PASSWORD")
             }
-            create("release") {
+            getByName("release") {
                 storeFile = file("release.keystore")
                 storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("RELEASE_KEY_ALIAS")
