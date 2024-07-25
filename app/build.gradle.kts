@@ -20,18 +20,28 @@ android {
     // Signing configs for github CI builds
     signingConfigs {
         if (System.getenv("CI") != null) {
-            getByName("debug") {
-                storeFile = file("debug.keystore")
-                storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("DEBUG_KEY_ALIAS")
+            fun createOrUpdateSigningConfig(name: String, storeFile: String, storePassword: String, keyAlias: String, keyPassword: String) {
+                val config = signingConfigs.findByName(name) ?: signingConfigs.create(name)
+                config.storeFile = file(storeFile)
+                config.storePassword = storePassword
+                config.keyAlias = keyAlias
+                config.keyPassword = keyPassword
+            }
+
+            createOrUpdateSigningConfig(
+                name = "debug",
+                storeFile = "debug.keystore",
+                storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD"),
+                keyAlias = System.getenv("DEBUG_KEY_ALIAS"),
                 keyPassword = System.getenv("DEBUG_KEY_PASSWORD")
-            }
-            getByName("release") {
-                storeFile = file("release.keystore")
-                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+            )
+            createOrUpdateSigningConfig(
+                name = "release",
+                storeFile = "release.keystore",
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD"),
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS"),
                 keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
-            }
+            )
         }
     }
 
