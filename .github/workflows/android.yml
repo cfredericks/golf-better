@@ -69,10 +69,16 @@ jobs:
         DEBUG_KEYSTORE_PASSWORD: ${{ secrets.DEBUG_KEYSTORE_PASSWORD }}
         DEBUG_KEY_ALIAS: ${{ secrets.DEBUG_KEY_ALIAS }}
         DEBUG_KEY_PASSWORD: ${{ secrets.DEBUG_KEY_PASSWORD }}
+        RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+        RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
     # Create APK Release
     - name: Build apk release project (APK) - ${{ env.main_project_module }} module
       run: ./gradlew assemble
       env:
+        DEBUG_KEYSTORE_PASSWORD: ${{ secrets.DEBUG_KEYSTORE_PASSWORD }}
+        DEBUG_KEY_ALIAS: ${{ secrets.DEBUG_KEY_ALIAS }}
+        DEBUG_KEY_PASSWORD: ${{ secrets.DEBUG_KEY_PASSWORD }}
         RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
         RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
         RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
@@ -80,6 +86,13 @@ jobs:
     # Noted for main module build [main_project_module]:bundleRelease
     - name: Build app bundle release (AAB) - ${{ env.main_project_module }} module
       run: ./gradlew ${{ env.main_project_module }}:bundleRelease
+      env:
+        DEBUG_KEYSTORE_PASSWORD: ${{ secrets.DEBUG_KEYSTORE_PASSWORD }}
+        DEBUG_KEY_ALIAS: ${{ secrets.DEBUG_KEY_ALIAS }}
+        DEBUG_KEY_PASSWORD: ${{ secrets.DEBUG_KEY_PASSWORD }}
+        RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+        RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
     # Upload Artifact Build
     # Noted For Output [main_project_module]/build/outputs/apk/debug/
     - name: Upload APK Debug - ${{ github.event.repository.name }}
