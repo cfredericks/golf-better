@@ -18,6 +18,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.golfbetterapp.golfbetter.clients.PgaAppEngineClient;
 import com.golfbetterapp.golfbetter.databinding.ActivityMainBinding;
 import com.golfbetterapp.golfbetter.databinding.ActivityMainBinding;
 import com.firebase.ui.auth.AuthUI;
@@ -152,6 +153,18 @@ public class MainActivity extends AppCompatActivity {
     // Signal tournament refresh to LeaderboardFragment
     final Intent intent = new Intent(LeaderboardFragment.REFRESH_TOURNAMENTS_INTENT);
     LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+    PgaAppEngineClient.updateUser(this, new Utils.ApiCallback<Void>() {
+      @Override
+      public void onSuccess(final Void result) {
+        Log.i("MainActivity", "Successfully posted user");
+      }
+
+      @Override
+      public void onFailure(final Exception e) {
+        Log.e("MainActivity", "Error posting user", e);
+      }
+    });
   }
 
   public void handleSignOut() {
