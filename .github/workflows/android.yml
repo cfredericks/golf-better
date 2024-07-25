@@ -2,6 +2,7 @@ name: Android
 
 env:
   main_project_module: app
+  CI: true
 
 on:
   push:
@@ -20,6 +21,14 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
     - uses: actions/checkout@v4
+    # Decode debug keystore
+    - name: Decode debug keystore
+      if: github.event_name == 'push' || github.event_name == 'pull_request'
+      run: echo "${{ secrets.DEBUG_KEYSTORE_BASE64 }}" | base64 --decode > debug.keystore
+    # Decode release keystore
+    - name: Decode release keystore
+      if: github.event_name == 'release'
+      run: echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -44,9 +53,17 @@ jobs:
     # Create APK Debug
     - name: Build apk debug project (APK) - ${{ env.main_project_module }} module
       run: ./gradlew assembleDebug
+      env:
+        DEBUG_KEYSTORE_PASSWORD: ${{ secrets.DEBUG_KEYSTORE_PASSWORD }}
+        DEBUG_KEY_ALIAS: ${{ secrets.DEBUG_KEY_ALIAS }}
+        DEBUG_KEY_PASSWORD: ${{ secrets.DEBUG_KEY_PASSWORD }}
     # Create APK Release
     - name: Build apk release project (APK) - ${{ env.main_project_module }} module
       run: ./gradlew assemble
+      env:
+        RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+        RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
     # Create Bundle AAB Release
     # Noted for main module build [main_project_module]:bundleRelease
     - name: Build app bundle release (AAB) - ${{ env.main_project_module }} module

@@ -17,8 +17,34 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Signing configs for github CI builds
+    signingConfigs {
+        if (System.getenv("CI") != null) {
+            create("debug") {
+                storeFile = file("debug.keystore")
+                storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("DEBUG_KEY_ALIAS")
+                keyPassword = System.getenv("DEBUG_KEY_PASSWORD")
+            }
+            create("release") {
+                storeFile = file("release.keystore")
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            if (System.getenv("CI") != null) {
+                signingConfig = signingConfigs.getByName("debug")
+            }
+        }
         release {
+            if (System.getenv("CI") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
