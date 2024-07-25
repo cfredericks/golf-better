@@ -31,16 +31,16 @@ android {
             createOrUpdateSigningConfig(
                 name = "debug",
                 storeFile = "debug.keystore",
-                storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD") ?: "android",
-                keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "androiddebugkey",
-                keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
+                storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD"),
+                keyAlias = System.getenv("DEBUG_KEY_ALIAS"),
+                keyPassword = System.getenv("DEBUG_KEY_PASSWORD")
             )
             createOrUpdateSigningConfig(
                 name = "release",
                 storeFile = "release.keystore",
-                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD") ?: "",
-                keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "",
-                keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: ""
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD"),
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS"),
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
             )
         }
     }
