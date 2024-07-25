@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
     final Intent signInIntent = AuthUI.getInstance()
         .createSignInIntentBuilder()
         .setAvailableProviders(providers)
+        .setAlwaysShowSignInMethodScreen(true)
         .build();
     startActivityForResult(signInIntent, RC_SIGN_IN);
   }
@@ -168,6 +169,8 @@ public class MainActivity extends AppCompatActivity {
   }
 
   public void handleSignOut() {
+    FirebaseAuth.getInstance().signOut();
+    AuthUI.getInstance().signOut(this);
     signedInUser = null;
     findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
     findViewById(R.id.sign_out_button).setVisibility(View.GONE);
