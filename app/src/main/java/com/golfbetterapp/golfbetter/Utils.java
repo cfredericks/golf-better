@@ -181,7 +181,7 @@ public class Utils {
         }
       }
 
-      if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+      if (urlConnection.getResponseCode() >= HttpURLConnection.HTTP_OK && urlConnection.getResponseCode() < HttpURLConnection.HTTP_MULT_CHOICE) {
         if (respParser != null) {
           callback.onSuccess(parseResponse(urlConnection.getInputStream(), respParser));
         } else {
