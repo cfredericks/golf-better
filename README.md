@@ -32,6 +32,7 @@ See directories under /gcp for specific READMEs.
   - [/gcp/cloud-functions/refresh-pga-data](/gcp/cloud-functions/refresh-pga-data) - Cloud Function for periodically syncing PGA APIs into CloudSQL
   - [/gcp/cloud-functions/refresh-leaderboards](/gcp/cloud-functions/refresh-leaderboards) - Cloud Function for periodically syncing tournament leaderboard info from SportsData API into CloudSQL
   - [/gcp/cloud-functions/refresh-tournaments](/gcp/cloud-functions/refresh-tournaments) - Cloud Function for periodically syncing tournament info from SportsData API into CloudSQL
+  - [/gcp/migrations](/gcp/migrations) - Sqitch Postgres database migrations
   - [/gcp/scripts](/gcp/scripts) - Ad hoc scripts for maintenance, monitoring, etc.
 - [/.github/workflows](/.github/workflows) - CI scripts
 
