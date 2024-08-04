@@ -37,9 +37,27 @@ jobs:
         pip install -r gcp/app-engine/requirements.txt
         sudo apt-get update
         sudo apt-get install -y sqitch
+    - name: Wait for Postgres to be ready
+      run: |
+        until pg_isready -h localhost -p 5432; do
+          echo "Waiting for Postgres to be ready..."
+          sleep 2
+        done
+    - name: Apply Sqitch migrations
+      working-directory: gcp/migrations
+      env:
+        PGUSER: postgres
+        PGPASSWORD: password
+        PGHOST: localhost
+        PGPORT: 5432
+        PGDATABASE: postgres
+      run: |
+        sqitch deploy db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE
+    - name: Install test dependencies
+      run: |
+        pip install pytest pytest-cov pytest-mock pytest-env
     - name: Run unit tests
       run: |
-        pip install pytest pytest-cov pytest-mock
         pytest gcp/app-engine/test/test_main.py --doctest-modules --junitxml=junit/gcp/app-engine/test-results.xml --cov=main --cov-report=xml --cov-report=html
     - name: Run integration tests
       env:

@@ -40,14 +40,14 @@ jobs:
     - name: Wait for Postgres to be ready
       run: |
         until pg_isready -h localhost -p 5432; do
-          echo "Waiting for Postgre to be ready..."
+          echo "Waiting for Postgres to be ready..."
           sleep 2
         done
     - name: Apply Sqitch migrations
       working-directory: gcp/migrations
       env:
         PGUSER: postgres
-        PGPASSWORD: postgres
+        PGPASSWORD: password
         PGHOST: localhost
         PGPORT: 5432
         PGDATABASE: postgres
