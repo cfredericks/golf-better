@@ -35,6 +35,27 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r gcp/cloud-functions/refresh-pga-data/requirements.txt
+    - name: Wait for Postgres to be ready
+      run: |
+        until pg_isready -h localhost -p 5432; do
+          echo "Waiting for Postgre to be ready..."
+          sleep 2
+        done
+    - name: Install Sqitch
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sqitch
+    - name: Set up Sqitch environment variables
+      env:
+        PGUSER: postgres
+        PGPASSWORD: postgres
+        PGHOST: localhost
+        PGPORT: 5432
+        PGDATABASE: postgres
+      run: echo "Sqitch environment variables set."
+    - name: Apply Sqitch migrations
+      run: |
+        sqitch deploy db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE
     - name: Test with pytest
       run: |
         pip install pytest pytest-cov pytest-mock pytest-env
