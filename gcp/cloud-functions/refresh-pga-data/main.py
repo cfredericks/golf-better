@@ -5,7 +5,7 @@ import os
 import argparse
 import json
 import requests
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone
 from google.cloud.sql.connector import Connector #, IPTypes
 import sqlalchemy
 from google.cloud import secretmanager
@@ -181,7 +181,7 @@ def refresh_data(request):
                 for t in t_group.get('tournaments', []):
                     start_date = None
                     if 'startDate' in t:
-                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0).date()
+                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0, tz=timezone.utc).date()
                     to_upsert.append((
                         "'" + t["id"] + "'",
                         "'" + t["tournamentName"].replace("'", "''") + "'",
@@ -194,7 +194,7 @@ def refresh_data(request):
                 for t in t_group.get('tournaments', []):
                     start_date = None
                     if 'startDate' in t:
-                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0).date()
+                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0, tz=timezone.utc).date()
                     to_upsert.append((
                         "'" + t["id"] + "'",
                         "'" + t["tournamentName"].replace("'", "''") + "'",
