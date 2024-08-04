@@ -5,7 +5,7 @@ import os
 import argparse
 import json
 import requests
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone
 from google.cloud.sql.connector import Connector #, IPTypes
 import sqlalchemy
 from google.cloud import secretmanager
@@ -62,7 +62,7 @@ def get_gsm_secret(secret_id, project_id=DEFAULT_PROJECT_ID, version_id=DEFAULT_
 
 def get_db_connection():
     db_user = os.getenv('DB_USER', default='postgres')
-    db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret('golf-better-cloudsql-password'))
+    db_password = os.getenv('DB_PASSWORD') or get_gsm_secret('golf-better-cloudsql-password')
     db_name = os.getenv('DB_NAME', default='postgres')
     db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
     db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
@@ -71,9 +71,10 @@ def get_db_connection():
     pw_log = "****" if db_password is not None else "<unset>"
     print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, port={db_port}, db={db_name}')
 
-    connector = Connector()
     def getconn():
         if db_instance_conn_name:
+            print(f'Connecting to CloudSQL instance with instance name: "{db_instance_conn_name}"')
+            connector = Connector()
             return connector.connect(
                 db_instance_conn_name,
                 "pg8000",
@@ -83,6 +84,7 @@ def get_db_connection():
                 #ip_type=IPTypes.PRIVATE
             )
         else:
+            print('Connecting to vanilla Postgres database')
             return pg8000.connect(
                 user=db_user,
                 password=db_password,
@@ -179,7 +181,7 @@ def refresh_data(request):
                 for t in t_group.get('tournaments', []):
                     start_date = None
                     if 'startDate' in t:
-                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0).date()
+                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0, tz=timezone.utc).date()
                     to_upsert.append((
                         "'" + t["id"] + "'",
                         "'" + t["tournamentName"].replace("'", "''") + "'",
@@ -192,7 +194,7 @@ def refresh_data(request):
                 for t in t_group.get('tournaments', []):
                     start_date = None
                     if 'startDate' in t:
-                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0).date()
+                        start_date = dt.fromtimestamp(t['startDate'] / 1000.0, tz=timezone.utc).date()
                     to_upsert.append((
                         "'" + t["id"] + "'",
                         "'" + t["tournamentName"].replace("'", "''") + "'",
@@ -338,7 +340,7 @@ def upsert(to_upsert, pool, db_table, db_cols):
                 arg_fmt = '(' + ','.join(['{}' for _ in range(0, len(to_upsert[0]))]) + ')'
                 args_str = ','.join([arg_fmt.format(*t) for t in to_upsert])
                 conflict_updates = ','.join([f'{c} = EXCLUDED.{c}' for c in db_cols])
-                db_conn.execute(sqlalchemy.text(f"INSERT INTO {db_table} ({','.join(db_cols)}) VALUES " \
+                db_conn.execute(sqlalchemy.text(f"INSERT INTO golfbetter.{db_table} ({','.join(db_cols)}) VALUES " \
                     + args_str \
                     + f' ON CONFLICT (id) DO UPDATE SET {conflict_updates}'))
                 db_conn.commit()
