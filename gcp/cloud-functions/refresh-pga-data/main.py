@@ -71,9 +71,9 @@ def get_db_connection():
     pw_log = "****" if db_password is not None else "<unset>"
     print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, port={db_port}, db={db_name}')
 
-    connector = Connector()
     def getconn():
         if db_instance_conn_name:
+            connector = Connector()
             return connector.connect(
                 db_instance_conn_name,
                 "pg8000",
