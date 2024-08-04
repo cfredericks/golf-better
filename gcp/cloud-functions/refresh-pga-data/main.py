@@ -73,6 +73,7 @@ def get_db_connection():
 
     def getconn():
         if db_instance_conn_name:
+            print(f'Connecting to CloudSQL instance with instance name: "{db_instance_conn_name}"')
             connector = Connector()
             return connector.connect(
                 db_instance_conn_name,
@@ -83,6 +84,7 @@ def get_db_connection():
                 #ip_type=IPTypes.PRIVATE
             )
         else:
+            print(f'Connecting to vanilla Postgres database')
             return pg8000.connect(
                 user=db_user,
                 password=db_password,
