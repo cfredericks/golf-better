@@ -53,6 +53,7 @@ jobs:
         PGPORT: 5432
         PGDATABASE: postgres
       run: |
+        echo "DB connection string: db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE"
         sqitch deploy db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE
     - name: Test with pytest
       env:
