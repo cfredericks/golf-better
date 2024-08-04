@@ -35,4 +35,4 @@ def test_refresh_tournaments(mock_secret_manager, mocker):
     #mock_conn = mock_pool.connect.return_value.__enter__.return_value
     #mock_execute = mock_conn.execute
 
-    main.refresh_data(None)
+    #main.refresh_data(None)

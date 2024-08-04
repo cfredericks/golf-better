@@ -56,7 +56,7 @@ def json_serial(obj):
 
 def get_db_connection():
     db_user = os.getenv('DB_USER', default='postgres')
-    db_password = os.getenv('DB_PASSWORD', default=get_gsm_secret('golf-better-cloudsql-password'))
+    db_password = os.getenv('DB_PASSWORD') or get_gsm_secret('golf-better-cloudsql-password')
     db_name = os.getenv('DB_NAME', default='postgres')
     db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
     db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
