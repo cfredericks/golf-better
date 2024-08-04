@@ -55,8 +55,15 @@ jobs:
       run: echo "Sqitch environment variables set."
     - name: Apply Sqitch migrations
       run: |
+        echo "DB connection string: db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE"
         sqitch deploy db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE
     - name: Test with pytest
+      env:
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: postgres
+        DB_PORT: 5432
+        DB_NAME: postgres
       run: |
         pip install pytest pytest-cov pytest-mock pytest-env
         pytest gcp/cloud-functions/refresh-pga-data/test_main.py --doctest-modules --junitxml=junit/gcp/cloud-functions/refresh-pga-data/test-results.xml --cov=main --cov-report=xml --cov-report=html
