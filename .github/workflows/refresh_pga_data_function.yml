@@ -45,17 +45,14 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y sqitch
-    - name: Set up Sqitch environment variables
+    - name: Apply Sqitch migrations
       env:
         PGUSER: postgres
         PGPASSWORD: postgres
         PGHOST: localhost
         PGPORT: 5432
         PGDATABASE: postgres
-      run: echo "Sqitch environment variables set."
-    - name: Apply Sqitch migrations
       run: |
-        echo "DB connection string: db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE"
         sqitch deploy db:pg://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE
     - name: Test with pytest
       env:
