@@ -99,10 +99,10 @@ def get_db_connection():
 @validate_token
 def get_pga_tournaments(user_email):
     print(f"Got get_pga_tournaments request from user: {user_email}")
-    query = "SELECT data FROM pga_tournaments where 1=1"
+    query = "SELECT data FROM golfbetter.pga_tournaments where 1=1"
     tournament_id = request.args.get('id', None)
     if tournament_id is not None:
-        query = query + " and id = '" + tournament_id + "'"
+        query = query + " and id = '" + str(tournament_id) + "'"
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
@@ -113,13 +113,13 @@ def get_pga_tournaments(user_email):
 @validate_token
 def get_pga_leaderboard_players(user_email):
     print(f"Got get_pga_leaderboard_players request from user: {user_email}")
-    query = "SELECT data FROM pga_leaderboard_players where 1=1"
+    query = "SELECT data FROM golfbetter.pga_leaderboard_players where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
-        query = query + " and tournament_id = '" + tournament_id + "'"
+        query = query + " and tournament_id = '" + str(tournament_id) + "'"
     player_id = request.args.get('id', None)
     if player_id is not None:
-        query = query + " and id = '" + player_id + "'"
+        query = query + " and id = '" + str(player_id) + "'"
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
@@ -129,13 +129,13 @@ def get_pga_leaderboard_players(user_email):
 @validate_token
 def get_pga_player_scorecards(user_email):
     print(f"Got get_pga_player_scorecards request from user: {user_email}")
-    query = "SELECT data FROM pga_player_scorecards where 1=1"
+    query = "SELECT data FROM golfbetter.pga_player_scorecards where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
-        query = query + " and tournament_id = '" + tournament_id + "'"
+        query = query + " and tournament_id = '" + str(tournament_id) + "'"
     player_id = request.args.get('id', None)
     if player_id is not None:
-        query = query + " and id = '" + player_id + "'"
+        query = query + " and id = '" + str(player_id) + "'"
     pool = get_db_connection()
     with pool.connect() as db_conn:
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
@@ -173,7 +173,7 @@ def post_user(user_email):
     pool = get_db_connection()
     with pool.connect() as db_conn:
         db_conn.execute(sqlalchemy.text(f'''
-            insert into users (id, name, email, created, last_updated, last_login)
+            insert into golfbetter.users (id, name, email, created, last_updated, last_login)
             values ('{id or email}', '{name or email}', '{email}', '{str(now)}', '{str(now)}', '{str(now)}')
             on conflict (id) do update set {", ".join(on_conflict_updates)}
             '''))

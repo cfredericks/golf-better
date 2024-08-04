@@ -338,7 +338,7 @@ def upsert(to_upsert, pool, db_table, db_cols):
                 arg_fmt = '(' + ','.join(['{}' for _ in range(0, len(to_upsert[0]))]) + ')'
                 args_str = ','.join([arg_fmt.format(*t) for t in to_upsert])
                 conflict_updates = ','.join([f'{c} = EXCLUDED.{c}' for c in db_cols])
-                db_conn.execute(sqlalchemy.text(f"INSERT INTO {db_table} ({','.join(db_cols)}) VALUES " \
+                db_conn.execute(sqlalchemy.text(f"INSERT INTO golfbetter.{db_table} ({','.join(db_cols)}) VALUES " \
                     + args_str \
                     + f' ON CONFLICT (id) DO UPDATE SET {conflict_updates}'))
                 db_conn.commit()
