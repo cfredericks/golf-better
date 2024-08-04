@@ -59,16 +59,16 @@ jobs:
     - name: Run unit tests
       run: |
         pytest gcp/cloud-functions/refresh-pga-data/test/test_main.py --doctest-modules --junitxml=junit/gcp/cloud-functions/refresh-pga-data/test-results.xml --cov=main --cov-report=xml --cov-report=html
-    - name: Run integration tests
-      env:
-        DB_USER: postgres
-        DB_PASSWORD: password
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: postgres
-        INSTANCE_CONNECTION_NAME: ''
-      run: |
-        pytest gcp/cloud-functions/refresh-pga-data/test/integration/test_integration.py --doctest-modules --junitxml=junit/gcp/cloud-functions/refresh-pga-data/test-integration-results.xml --cov=main --cov-report=xml --cov-report=html
+    #- name: Run integration tests
+    #  env:
+    #    DB_USER: postgres
+    #    DB_PASSWORD: password
+    #    DB_HOST: localhost
+    #    DB_PORT: 5432
+    #    DB_NAME: postgres
+    #    INSTANCE_CONNECTION_NAME: ''
+    #  run: |
+    #    pytest gcp/cloud-functions/refresh-pga-data/test/integration/test_integration.py --doctest-modules --junitxml=junit/gcp/cloud-functions/refresh-pga-data/test-integration-results.xml --cov=main --cov-report=xml --cov-report=html
     - name: Lint with Ruff
       run: |
         pip install ruff

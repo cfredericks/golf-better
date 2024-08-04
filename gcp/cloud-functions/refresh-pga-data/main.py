@@ -84,7 +84,7 @@ def get_db_connection():
                 #ip_type=IPTypes.PRIVATE
             )
         else:
-            print(f'Connecting to vanilla Postgres database')
+            print('Connecting to vanilla Postgres database')
             return pg8000.connect(
                 user=db_user,
                 password=db_password,

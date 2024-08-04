@@ -3,7 +3,7 @@ import json
 import pytest
 import sqlalchemy
 
-from datetime import date, datetime
+from datetime import datetime
 
 @pytest.fixture
 def client():
