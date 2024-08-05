@@ -1,3 +1,7 @@
+import sys
+from os.path import dirname, abspath
+sys.path.append(dirname(dirname(abspath(__file__))))
+
 import functions_framework
 import gzip
 import base64

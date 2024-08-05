@@ -44,25 +44,6 @@ public class LeaderboardV3 {
     @Getter
     @Setter
     @ToString
-    public static class Player {
-      private String id;
-      private String firstName;
-      private String lastName;
-      private boolean amateur;
-      private String displayName;
-      private String abbreviations;
-      private String abbreviationsAccessibilityText;
-      private String country;
-      private String countryFlag;
-      private String shortName;
-      private String lineColor;
-      private boolean tourBound;
-      private String bettingProfile;
-    }
-
-    @Getter
-    @Setter
-    @ToString
     public static class ScoringData {
       private String position;
       private String total;
