@@ -34,7 +34,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r gcp/app-engine/requirements.txt
+        pip install -r gcp/requirements.txt
+        pip install gcp
         sudo apt-get update
         sudo apt-get install -y sqitch
     - name: Wait for Postgres to be ready
