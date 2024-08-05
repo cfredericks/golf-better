@@ -2,21 +2,17 @@ import sys
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
 
+from common.db import get_db_connection
+
 import functions_framework
 import gzip
 import base64
-import os
 import argparse
 import json
 import requests
 from datetime import datetime as dt, timezone
-from google.cloud.sql.connector import Connector #, IPTypes
 import sqlalchemy
-from google.cloud import secretmanager
-import pg8000
 
-DEFAULT_PROJECT_ID = 'stoked-depth-428423-j7'
-DEFAULT_VERSION_ID = 'latest'
 
 GRAPHQL_ENDPOINT = 'https://orchestrator.pgatour.com/graphql'
 GRAPHQL_HEADERS = {
@@ -56,56 +52,6 @@ ALL_DATA_TYPES = [
     SHOT_DETAILS_TYPE,
     SCORECARD_TYPE
 ]
-
-def get_gsm_secret(secret_id, project_id=DEFAULT_PROJECT_ID, version_id=DEFAULT_VERSION_ID):
-    client = secretmanager.SecretManagerServiceClient()
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
-    response = client.access_secret_version(name=name)
-    payload = response.payload.data.decode('UTF-8')
-    return payload
-
-def get_db_connection():
-    db_user = os.getenv('DB_USER', default='postgres')
-    db_password = os.getenv('DB_PASSWORD') or get_gsm_secret('golf-better-cloudsql-password')
-    db_name = os.getenv('DB_NAME', default='postgres')
-    db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
-    db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
-    db_port = os.getenv('DB_PORT', default=5432)
-
-    pw_log = "****" if db_password is not None else "<unset>"
-    print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, port={db_port}, db={db_name}')
-
-    def getconn():
-        if db_instance_conn_name:
-            print(f'Connecting to CloudSQL instance with instance name: "{db_instance_conn_name}"')
-            connector = Connector()
-            return connector.connect(
-                db_instance_conn_name,
-                "pg8000",
-                user=db_user,
-                password=db_password,
-                db=db_name,
-                #ip_type=IPTypes.PRIVATE
-            )
-        else:
-            print('Connecting to vanilla Postgres database')
-            return pg8000.connect(
-                user=db_user,
-                password=db_password,
-                host=db_host,
-                port=db_port,
-                database=db_name
-            )
-
-    pool = sqlalchemy.create_engine(
-        "postgresql+pg8000://",
-        creator=getconn,
-        connect_args={
-            "port": db_port
-        }
-    )
-
-    return pool
 
 @functions_framework.http
 def refresh_data(request):
