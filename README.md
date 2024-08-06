@@ -3,6 +3,8 @@
 
 # Local Setup
 
+# Local Setup
+
 To build and run the Android app:
 - Install Android Studio and load code
 - Login to golf-better GCP account with gcloud

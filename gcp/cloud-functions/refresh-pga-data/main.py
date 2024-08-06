@@ -53,6 +53,7 @@ ALL_DATA_TYPES = [
     SCORECARD_TYPE
 ]
 
+
 @functions_framework.http
 def refresh_data(request):
     data_types = ALL_DATA_TYPES

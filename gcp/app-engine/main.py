@@ -8,6 +8,7 @@ from common.schemas import TournamentSchema, PlayerRowV3Schema, ScorecardV3Schem
 
 app = Flask(__name__)
 
+
 @app.route(PUBLIC_API_PREFIX + '/pga-tournaments', methods=['GET'])
 @validate_token
 def get_pga_tournaments(user_email):
