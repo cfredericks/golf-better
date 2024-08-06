@@ -5,3 +5,8 @@ cloud-sql-python-connector[pg8000]==1.*
 gunicorn>=22.0.0
 google-cloud-secret-manager==2.20.*
 firebase-admin==6.5.*
+marshmallow==3.21.*
+factory_boy==3.3.*
+twine==5.1.*
+setuptools==70.3.*
+wheel==0.43.*

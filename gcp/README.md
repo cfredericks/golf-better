@@ -1,10 +1,43 @@
+# Running locally
+
+First run:
+```bash
+pip install -e .
+```
+from the root of your project directory. This installs the project in "editable" mode, which means that changes to the source files are immediately available without reinstalling.
+
+And then you can run each individual package, e.g.
+```bash
+python3 app-engine/main.py
+```
+
+# Deploying golf-better-common to PyPI
+
+First make sure that you have setup github creds in your ~/.pypirc, e.g.
+```
+[distutils]
+index-servers =
+    pypi
+    github
+
+[github]
+repository: https://github.com/cfredericks/golf-better
+username: <username>
+password: <password/personal-access-token>
+```
+
+```bash
+cd common
+python3 setup.py sdist bdist_wheel
+twine upload -r github dist/*
+```
+
 # Cloud resources
 
 - Cloud SQL: https://console.cloud.google.com/sql/instances/golf-better/overview?project=stoked-depth-428423-j7
 - Cloud functions: https://console.cloud.google.com/functions/list?project=stoked-depth-428423-j7
 - CRON schedules: https://console.cloud.google.com/cloudscheduler?project=stoked-depth-428423-j7
 - App Engine: https://console.cloud.google.com/appengine?serviceId=default&project=stoked-depth-428423-j7
-
 
 # Infra commands
 

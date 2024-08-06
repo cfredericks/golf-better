@@ -26,23 +26,6 @@ public class ScorecardV3 {
   @Getter
   @Setter
   @ToString
-  public static class Player {
-    private String abbreviations;
-    private String abbreviationsAccessibilityText;
-    private boolean amateur;
-    private String country;
-    private String countryFlag;
-    private String displayName;
-    private String firstName;
-    private String id;
-    private String lastName;
-    private String shortName;
-    private String lineColor;
-  }
-
-  @Getter
-  @Setter
-  @ToString
   public static class RoundScore {
     private String __typename;
     private boolean complete;
