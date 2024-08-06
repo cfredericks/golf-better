@@ -1,0 +1,1 @@
+DB_HOST=localhost DB_PORT=15432 DB_PASSWORD=password INSTANCE_CONNECTION_NAME= python3.11 ../cloud-functions/refresh-pga-data/main.py --write --data-types schedule leaderboard players

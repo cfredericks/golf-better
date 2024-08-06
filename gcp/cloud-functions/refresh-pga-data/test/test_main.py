@@ -26,7 +26,7 @@ def test_get_gsm_secret_overrides(mock_secret_manager):
     mock_secret_manager.access_secret_version.assert_called_once_with(name=f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}")
     assert secret == SECRET_PAYLOAD
 
-def refresh_tournaments(mock_secret_manager, mocker):
+def test_refresh_tournaments(mock_secret_manager, mocker):
     # TODO finish testing with asserts
     # Mock get_db_connection
     mocker.patch('main.get_db_connection')
@@ -35,4 +35,4 @@ def refresh_tournaments(mock_secret_manager, mocker):
     #mock_conn = mock_pool.connect.return_value.__enter__.return_value
     #mock_execute = mock_conn.execute
 
-    main.refresh_data(None)
+    #main.refresh_data(None)

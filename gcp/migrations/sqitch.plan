@@ -1,0 +1,6 @@
+%syntax-version=1.0.0
+%project=golf-better
+%uri=https://github.com/cfredericks/golf-better/
+
+appschema 2024-07-26T18:05:57Z System Administrator <root@Coreys-MBP.hsd1.ca.comcast.net> # Add schema for initial objects.
+init [appschema] 2024-07-26T18:06:45Z System Administrator <root@Coreys-MBP.hsd1.ca.comcast.net> # Initial migration.
