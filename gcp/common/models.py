@@ -9,6 +9,8 @@ Base = declarative_base()
 
 class PGATournament(Base):
     __tablename__ = 'pga_tournaments'
+    __table_args__ = {'schema': 'golfbetter'}
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     start_date = Column(Date)
@@ -24,6 +26,8 @@ class PGATournament(Base):
 
 class PGAPlayer(Base):
     __tablename__ = 'pga_players'
+    __table_args__ = {'schema': 'golfbetter'}
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     data = Column(JSON, nullable=False)
@@ -37,6 +41,8 @@ class PGAPlayer(Base):
 
 class PGALeaderboardPlayer(Base):
     __tablename__ = 'pga_leaderboard_players'
+    __table_args__ = {'schema': 'golfbetter'}
+
     id = Column(String, primary_key=True)
     tournament_id = Column(String, nullable=False)
     player_id = Column(String, nullable=False)
@@ -51,6 +57,8 @@ class PGALeaderboardPlayer(Base):
 
 class PGAPlayerScorecard(Base):
     __tablename__ = 'pga_player_scorecards'
+    __table_args__ = {'schema': 'golfbetter'}
+
     id = Column(String, primary_key=True)
     tournament_id = Column(String, nullable=False)
     player_id = Column(String, nullable=False)
@@ -65,6 +73,8 @@ class PGAPlayerScorecard(Base):
 
 class User(Base):
     __tablename__ = 'users'
+    __table_args__ = {'schema': 'golfbetter'}
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)

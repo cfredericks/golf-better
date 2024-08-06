@@ -12,7 +12,7 @@ app = Flask(__name__)
 @validate_token
 def get_pga_tournaments(user_email):
     print(f"Got get_pga_tournaments request from user: {user_email}")
-    tournament_id = request.args.get('tournamentId', None)
+    tournament_id = request.args.get('id', None)
     db = SessionLocal()
     try:
         data = [t.data for t in get_tournaments(db, tournament_id)]

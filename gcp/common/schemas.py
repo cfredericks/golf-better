@@ -18,9 +18,9 @@ class ChampionSchema(Schema):
 
 class TournamentCategoryInfoSchema(Schema):
     type = fields.Str()
-    logoLight = fields.Str(allow_none=True, missing=None)
-    logoDark = fields.Str(allow_none=True, missing=None)
-    label = fields.Str(allow_none=True, missing=None)
+    logoLight = fields.Str(allow_none=True, load_default=None)
+    logoDark = fields.Str(allow_none=True, load_default=None)
+    label = fields.Str(allow_none=True, load_default=None)
 
     @post_load
     def make_tournament_category_info(self, data, **kwargs):
@@ -45,15 +45,15 @@ class TournamentSchema(Schema):
     startDate = fields.Int()
     state = fields.Str()
     stateCode = fields.Str()
-    status = fields.Str(allow_none=True, missing=None)
-    tournamentStatus = fields.Str(allow_none=True, missing=None)
-    ticketsURL = fields.Str(allow_none=True, missing=None)
+    status = fields.Str(allow_none=True, load_default=None)
+    tournamentStatus = fields.Str(allow_none=True, load_default=None)
+    ticketsURL = fields.Str(allow_none=True, load_default=None)
     tourStandingHeading = fields.Str()
     tourStandingValue = fields.Str()
     tournamentLogo = fields.Str()
     display = fields.Str()
     sequenceNumber = fields.Int()
-    tournamentCategoryInfo = fields.Nested(TournamentCategoryInfoSchema, allow_none=True, missing=None)
+    tournamentCategoryInfo = fields.Nested(TournamentCategoryInfoSchema, allow_none=True, load_default=None)
 
     @post_load
     def make_tournament(self, data, **kwargs):
@@ -71,22 +71,22 @@ class PlayerBioSchema(Schema):
 
 class PlayerSchema(Schema):
     id = fields.Str()
-    isActive = fields.Bool(allow_none=True, missing=None)
+    isActive = fields.Bool(allow_none=True, load_default=None)
     firstName = fields.Str()
     lastName = fields.Str()
     shortName = fields.Str()
     displayName = fields.Str()
-    amateur = fields.Bool(allow_none=True, missing=None)
-    tourBound = fields.Bool(allow_none=True, missing=None)
-    alphaSort = fields.Str(allow_none=True, missing=None)
+    amateur = fields.Bool(allow_none=True, load_default=None)
+    tourBound = fields.Bool(allow_none=True, load_default=None)
+    alphaSort = fields.Str(allow_none=True, load_default=None)
     country = fields.Str()
-    countryFlag = fields.Str(allow_none=True, missing=None)
-    headshot = fields.Str(allow_none=True, missing=None)
-    lineColor = fields.Str(allow_none=True, missing=None)
-    bettingProfile = fields.Str(allow_none=True, missing=None)
-    abbreviations = fields.Str(allow_none=True, missing=None)
-    abbreviationsAccessibilityText = fields.Str(allow_none=True, missing=None)
-    playerBio = fields.Nested(PlayerBioSchema, allow_none=True, missing=None)
+    countryFlag = fields.Str(allow_none=True, load_default=None)
+    headshot = fields.Str(allow_none=True, load_default=None)
+    lineColor = fields.Str(allow_none=True, load_default=None)
+    bettingProfile = fields.Str(allow_none=True, load_default=None)
+    abbreviations = fields.Str(allow_none=True, load_default=None)
+    abbreviationsAccessibilityText = fields.Str(allow_none=True, load_default=None)
+    playerBio = fields.Nested(PlayerBioSchema, allow_none=True, load_default=None)
 
     @post_load
     def make_player(self, data, **kwargs):
@@ -94,38 +94,38 @@ class PlayerSchema(Schema):
 
 class ScoringDataSchema(Schema):
     position = fields.Str()
-    total = fields.Str(allow_none=True, missing=None)
-    totalSort = fields.Int(allow_none=True, missing=None)
-    thru = fields.Str(allow_none=True, missing=None)
-    thruSort = fields.Int(allow_none=True, missing=None)
+    total = fields.Str(allow_none=True, load_default=None)
+    totalSort = fields.Int(allow_none=True, load_default=None)
+    thru = fields.Str(allow_none=True, load_default=None)
+    thruSort = fields.Int(allow_none=True, load_default=None)
     score = fields.Str()
     scoreSort = fields.Int()
     courseId = fields.Str()
     groupNumber = fields.Int()
     currentRound = fields.Int()
-    oddsToWin = fields.Str(allow_none=True, missing=None)
-    oddsSwing = fields.Str(allow_none=True, missing=None)
-    oddsOptionId = fields.Str(allow_none=True, missing=None)
-    oddsSort = fields.Float(allow_none=True, missing=None)
+    oddsToWin = fields.Str(allow_none=True, load_default=None)
+    oddsSwing = fields.Str(allow_none=True, load_default=None)
+    oddsOptionId = fields.Str(allow_none=True, load_default=None)
+    oddsSort = fields.Float(allow_none=True, load_default=None)
     backNine = fields.Bool()
     roundHeader = fields.Str()
     rounds = fields.List(fields.Str())
     movementDirection = fields.Str()
     movementAmount = fields.Str()
     playerState = fields.Str()
-    rankingMovement = fields.Str(allow_none=True, missing=None)
-    rankingMovementAmount = fields.Str(allow_none=True, missing=None)
-    rankingMovementAmountSort = fields.Int(allow_none=True, missing=None)
+    rankingMovement = fields.Str(allow_none=True, load_default=None)
+    rankingMovementAmount = fields.Str(allow_none=True, load_default=None)
+    rankingMovementAmountSort = fields.Int(allow_none=True, load_default=None)
     totalStrokes = fields.Str()
     official = fields.Str()
     officialSort = fields.Int()
     projected = fields.Str()
     projectedSort = fields.Int()
-    hasStoryContent = fields.Bool(allow_none=True, missing=None)
+    hasStoryContent = fields.Bool(allow_none=True, load_default=None)
     storyContentRounds = fields.List(fields.Str())
-    roundStatus = fields.Str(allow_none=True, missing=None)
-    rankLogoLight = fields.Str(allow_none=True, missing=None)
-    rankLogoDark = fields.Str(allow_none=True, missing=None)
+    roundStatus = fields.Str(allow_none=True, load_default=None)
+    rankLogoLight = fields.Str(allow_none=True, load_default=None)
+    rankLogoDark = fields.Str(allow_none=True, load_default=None)
 
     @post_load
     def make_scoring_data(self, data, **kwargs):
@@ -133,7 +133,7 @@ class ScoringDataSchema(Schema):
 
 class PlayerRowV3Schema(Schema):
     id = fields.Str()
-    leaderboardSortOrder = fields.Int(allow_none=True, missing=None)
+    leaderboardSortOrder = fields.Int(allow_none=True, load_default=None)
     player = fields.Nested(PlayerSchema)
     scoringData = fields.Nested(ScoringDataSchema)
 
@@ -144,11 +144,11 @@ class PlayerRowV3Schema(Schema):
 class HoleSchema(Schema):
     holeNumber = fields.Int()
     par = fields.Int()
-    score = fields.Str(allow_none=True, missing=None)
-    sequenceNumber = fields.Int(allow_none=True, missing=None)
-    status = fields.Str(allow_none=True, missing=None)
-    yardage = fields.Int(allow_none=True, missing=None)
-    roundScore = fields.Str(allow_none=True, missing=None)
+    score = fields.Str(allow_none=True, load_default=None)
+    sequenceNumber = fields.Int(allow_none=True, load_default=None)
+    status = fields.Str(allow_none=True, load_default=None)
+    yardage = fields.Int(allow_none=True, load_default=None)
+    roundScore = fields.Str(allow_none=True, load_default=None)
 
     @post_load
     def make_hole(self, data, **kwargs):
@@ -156,9 +156,9 @@ class HoleSchema(Schema):
 
 class NineHolesSchema(Schema):
     holes = fields.List(fields.Nested(HoleSchema))
-    totalLabel = fields.Str(allow_none=True, missing=None)
-    parTotal = fields.Int(allow_none=True, missing=None)
-    total = fields.Str(allow_none=True, missing=None)
+    totalLabel = fields.Str(allow_none=True, load_default=None)
+    parTotal = fields.Int(allow_none=True, load_default=None)
+    total = fields.Str(allow_none=True, load_default=None)
 
     @post_load
     def make_nine_holes(self, data, **kwargs):

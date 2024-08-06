@@ -11,6 +11,27 @@ And then you can run each individual package, e.g.
 python3 app-engine/main.py
 ```
 
+# Deploying golf-better-common to PyPI
+
+First make sure that you have setup github creds in your ~/.pypirc, e.g.
+```
+[distutils]
+index-servers =
+    pypi
+    github
+
+[github]
+repository: https://github.com/cfredericks/golf-better
+username: <username>
+password: <password/personal-access-token>
+```
+
+```bash
+cd common
+python3 setup.py sdist bdist_wheel
+twine upload -r github dist/*
+```
+
 # Cloud resources
 
 - Cloud SQL: https://console.cloud.google.com/sql/instances/golf-better/overview?project=stoked-depth-428423-j7

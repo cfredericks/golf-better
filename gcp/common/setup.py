@@ -6,7 +6,7 @@ def parse_requirements(filename):
         return [line.strip() for line in file if line and not line.startswith('#')]
 
 setup(
-    name='golf-better',
+    name='golf-better-common',
     version='0.1.0',
     packages=find_packages(),
     install_requires=parse_requirements('requirements.txt'),

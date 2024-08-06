@@ -1,5 +1,5 @@
 # golf-better
-![Android](https://github.com/cfredericks/golf-better/actions/workflows/android.yml/badge.svg) ![App Engine](https://github.com/cfredericks/golf-better/actions/workflows/app_engine.yml/badge.svg) ![Refresh PGA Data](https://github.com/cfredericks/golf-better/actions/workflows/refresh_pga_data_function.yml/badge.svg)
+![Android](https://github.com/cfredericks/golf-better/actions/workflows/android.yml/badge.svg) ![App Engine](https://github.com/cfredericks/golf-better/actions/workflows/app_engine.yml/badge.svg) ![Refresh PGA Data](https://github.com/cfredericks/golf-better/actions/workflows/refresh_pga_data_function.yml/badge.svg) ![Common](https://github.com/cfredericks/golf-better/actions/workflows/common.yml/badge.svg)
 
 # Local Setup
 
