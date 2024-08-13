@@ -13,7 +13,7 @@ def handle_slack_command(command_text, channel):
     status_code = 200
     # Handle tournament info command
     if "tournament info" in command_text:
-        msg, status_code = handle_tournament_info(command_text, channel)
+        msg, status_code = handle_tournament_info(command_text)
 
     # Handle player info command
     elif "player info image" in command_text:
@@ -21,11 +21,11 @@ def handle_slack_command(command_text, channel):
 
     # Handle player info command
     elif "player info" in command_text:
-        msg, status_code = handle_player_info(command_text, channel)
+        msg, status_code = handle_player_info(command_text)
 
     # Handle top 10 players command
     elif "top 10" in command_text:
-        msg, status_code = handle_top_10_players(command_text, channel)
+        msg, status_code = handle_top_10_players(command_text)
 
     # Handle unknown command
     else:
@@ -41,7 +41,7 @@ def handle_slack_command(command_text, channel):
             print(f'Would respond to slack event with channel={channel}, text={msg}')
     return msg, status_code
 
-def handle_tournament_info(command_text, channel):
+def handle_tournament_info(command_text):
     # Parse for specific tournament ID or name
     words = command_text.split()
     if len(words) > 3:
@@ -66,7 +66,7 @@ def handle_tournament_info(command_text, channel):
 
     return response_text, 200
 
-def handle_player_info(command_text, channel):
+def handle_player_info(command_text):
     # Parse for specific player name/id and tournament name/id
     words = command_text.split()
     round = None
@@ -123,9 +123,8 @@ def handle_player_info_image(command_text, channel):
 
     return "Please specify both a player and a tournament.", 400
 
-def handle_top_10_players(command_text, channel):
+def handle_top_10_players(command_text):
     words = command_text.split()
-    status_code = 200
     if len(words) > 3:
         tournament_search = words[-1]  # Assume the last word is the tournament name/id
         top_10_players = get_top_players(tournament_search, limit=10)
