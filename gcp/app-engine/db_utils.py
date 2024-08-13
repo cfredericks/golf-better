@@ -72,6 +72,7 @@ def get_next_tournaments(tournament_search=None):
     pool = get_db_connection()
     now = datetime.now()
     with pool.connect() as db_conn:
+        print(f"Running SQL query: {query}")
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
         tournaments = [{
             "name": row[0],
@@ -90,7 +91,7 @@ def get_player(player_search, tournament_search, round=None):
         with latest_tournament as (
           select id, name
           from {DB_SCHEMA}.pga_tournaments t
-          where (lower(t.id) like '%wyndh%' or lower(t.name) like '%wyndh%')
+          where ({tournament_filter})
           order by t.is_completed, abs(EXTRACT(EPOCH FROM (NOW() - t.start_date)))
           limit 1
         )
@@ -99,11 +100,12 @@ def get_player(player_search, tournament_search, round=None):
           sc.data->'roundScores'
         from {DB_SCHEMA}.pga_player_scorecards sc
         inner join latest_tournament t on sc.tournament_id = t.id
-        where (({tournament_filter}) and ({player_filter}))
+        where ({player_filter})
         limit 1
     """
     pool = get_db_connection()
     with pool.connect() as db_conn:
+        print(f"Running SQL query: {query}")
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
         if len(records) != 1:
             return None
@@ -150,6 +152,7 @@ def get_top_players(tournament_search, limit=10):
     """
     pool = get_db_connection()
     with pool.connect() as db_conn:
+        print(f"Running SQL query: {query}")
         records = db_conn.execute(sqlalchemy.text(query)).fetchall()
         return [{
             "name": row[0],
