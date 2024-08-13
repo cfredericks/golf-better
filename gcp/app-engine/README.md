@@ -29,7 +29,7 @@ e.g.
 curl http://127.0.0.1:8080/api/v1/tournaments
 ```
 
-To test slack without actually integration with slack, first run the app engine with slack integration disabled:
+To test the Slack integration without actually interacting with Slack, first run the app engine with Slack integration disabled:
 ```bash
 NO_SLACK=1 python3 main.py
 ```
@@ -44,12 +44,12 @@ If you'd like to run a local app engine and have it actually interact with Slack
 ngrok http 8080
 ```
 
-Then you can update the slack app "event subscription" settings to point to this new endpoint, e.g.
+Then you can update the Slack app "event subscription" settings at https://api.slack.com/apps to point to this new endpoint, e.g.
 ```bash
 https://61e9-2601-642-4900-7-108a-a3e8-97f7-ce02.ngrok-free.app/api/v1/slack/events
 ```
 
-Then when you run a local app engine on port 8008, the app integrations in Slack will be forwarded to your local instance.
+Then when you run a local app engine, the Slack integration will be forwarded to your local instance.
 
 # Endpoints
 
