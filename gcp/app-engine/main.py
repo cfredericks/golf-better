@@ -3,13 +3,13 @@ import firebase_admin
 from flask import Flask, request, jsonify
 import json
 import os
-from slack_handler import handle_slack_command, slack_client
+from slack_handler import handle_slack_command
 from slack_sdk.errors import SlackApiError
 import sqlalchemy
 from auth_utils import validate_token
 from db_utils import get_db_connection, DB_SCHEMA
 if not os.getenv('NO_SLACK'):
-    from slack_utils import verify_slack_signature
+    from slack_utils import slack_client, verify_slack_signature
 from utils import json_serial
 
 app = Flask(__name__)
