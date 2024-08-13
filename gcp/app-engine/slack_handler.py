@@ -115,7 +115,7 @@ def handle_player_info_image(command_text, channel):
                 image = create_golf_scorecard_image(player_info)
                 return save_and_upload_slack_image(image, channel, text=text)
             except Exception as e:
-                print(f'Error creating image', e)
+                print('Error creating image', e)
                 return f'Error creating image: {e}', 500
 
         return "Player or tournament not found.", 404
