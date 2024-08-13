@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import wraps
 import firebase_admin
 from flask import Flask, request, jsonify
 import json
@@ -8,9 +9,17 @@ from slack_sdk.errors import SlackApiError
 import sqlalchemy
 from auth_utils import validate_token
 from db_utils import get_db_connection, DB_SCHEMA
+from utils import json_serial
+
 if not os.getenv('NO_SLACK'):
     from slack_utils import slack_client, verify_slack_signature
-from utils import json_serial
+else:
+    # NOP decorator
+    def verify_slack_signature(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            return f(*args, **kwargs)
+        return decorated_function
 
 app = Flask(__name__)
 
