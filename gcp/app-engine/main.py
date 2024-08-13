@@ -13,7 +13,7 @@ from db_utils import get_db_connection
 from db_queries import DB_SCHEMA
 from utils import json_serial
 
-if not os.getenv('NO_SLACK') and not os.getenv('DRY_RUN'):
+if not os.getenv('NO_SLACK'):
     from slack_utils import slack_client, verify_slack_signature
 else:
     # NOP decorator
@@ -166,7 +166,7 @@ def post_slack_events(user_email=None):
             try:
                 exception = ex
                 msg = f'Error processing message: {data}. {ex}'
-                if not os.getenv('DRY_RUN'):
+                if not os.getenv('NO_SLACK'):
                     slack_client.chat_postMessage(channel=channel, text=msg)
                 else:
                     print(f"Would send error to slack: channel={channel}, text={msg}")

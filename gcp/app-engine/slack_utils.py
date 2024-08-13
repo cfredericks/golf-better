@@ -48,7 +48,7 @@ def save_and_upload_slack_image(image: Image, channel, image_path=f'/tmp/{uuid.u
     return upload_slack_image(channel, image_path, text)
 
 def upload_slack_image(channel, image_path, text="Here is the golf scorecard:"):
-    if not os.getenv("DRY_RUN"):
+    if not os.getenv("NO_SLACK"):
         try:
             slack_client.files_upload_v2(
                 channels=channel,

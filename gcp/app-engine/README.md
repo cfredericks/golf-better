@@ -29,9 +29,9 @@ e.g.
 curl http://127.0.0.1:8080/api/v1/tournaments
 ```
 
-To test slack without actually integration with slack, first run the app engine in dry run mode:
+To test slack without actually integration with slack, first run the app engine with slack integration disabled:
 ```bash
-DRY_RUN=1 python3 main.py
+NO_SLACK=1 python3 main.py
 ```
 
 Then you can curl to the endpoint, e.g.

@@ -35,7 +35,7 @@ def handle_slack_command(command_text, channel):
 
     print(f'Finished processing, code={status_code}, msg={msg}')
     if msg:
-        if not os.getenv('DRY_RUN'):
+        if not os.getenv('NO_SLACK'):
             slack_client.chat_postMessage(channel=channel, text=msg)
         else:
             print(f'Would respond to slack event with channel={channel}, text={msg}')
