@@ -189,7 +189,6 @@ def create_golf_scorecard_image(player_info):
     width = 800
     height = 80  # Adjust the height to fit the additional row for par values
     cell_width = width // 18
-    cell_height = height
 
     # Create a blank image with white background
     image = Image.new('RGB', (width, height), color='white')
@@ -211,7 +210,6 @@ def create_golf_scorecard_image(player_info):
         x0 = i * cell_width
         y0 = 0
         x1 = x0 + cell_width
-        y1 = cell_height
 
         # Draw vertical grid lines
         draw.line([(x0, 0), (x0, height)], fill=black, width=2)

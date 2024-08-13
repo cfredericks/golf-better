@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 import firebase_admin
 from flask import Flask, request, jsonify
 import json
@@ -123,7 +123,7 @@ def post_slack_events(user_email=None):
         channel = event['channel']
         try:
             print(f"Slack event received: {event}")
-            if event['type'] == 'message' and not 'bot_id' in event:
+            if event['type'] == 'message' and 'bot_id' not in event:
                 text = event['text']
                 print(f"Slack message event sent from bot '{event['user']}' for channel '{channel}': '{text}'")
                 return handle_slack_command(text, channel)
