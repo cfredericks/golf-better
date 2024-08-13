@@ -11,7 +11,7 @@ from auth_utils import validate_token
 from db_utils import get_db_connection, DB_SCHEMA
 from utils import json_serial
 
-if not os.getenv('NO_SLACK'):
+if not os.getenv('NO_SLACK') and not os.getenv('DRY_RUN'):
     from slack_utils import slack_client, verify_slack_signature
 else:
     # NOP decorator
@@ -124,6 +124,8 @@ def post_slack_events(user_email=None):
         print(f"Empty post body for request: {request}")
         return 'Post body empty', 400
 
+    exception = None
+
     if 'challenge' in data:
         return jsonify(data['challenge'])
 
@@ -140,15 +142,27 @@ def post_slack_events(user_email=None):
                 text = event['text']
                 print(f"Slack app_mention event sent from bot '{event['user']}' for channel '{channel}': '{text}'")
                 return handle_slack_command(text, channel)
+            print(f'Unknown event type: {event}')
         except Exception as ex:
             try:
+                exception = ex
                 msg = f'Error processing message: {data}. {ex}'
-                slack_client.chat_postMessage(channel=channel, text=msg)
+                if not os.getenv('DRY_RUN'):
+                    slack_client.chat_postMessage(channel=channel, text=msg)
+                else:
+                    print(f"Would send error to slack: channel={channel}, text={msg}")
             except SlackApiError as e:
+                exception = e
                 print(f"Error posting message: {e.response['error']}")
 
-    print(f"Error processing slack slack event: {data}")
-    return f"Error processing slack slack event: {data}", 400
+    if not exception:
+        print(f'Unknown type: {data}')
+
+    if exception is not None:
+        print(f"Error processing slack event: {data}", exception)
+    else:
+        print(f"Error processing slack event: {data}")
+    return f"Error processing slack event: {data}", 400
 
 
 if __name__ == '__main__':

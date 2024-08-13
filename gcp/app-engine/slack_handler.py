@@ -62,7 +62,11 @@ def handle_tournament_info(command_text, channel):
             response_text += f"- {tournament['name']} ({tournament['status']}) - {tournament['date']}\n"
 
     if response_text:
-        slack_client.chat_postMessage(channel=channel, text=response_text)
+        if not os.getenv("DRY_RUN"):
+            slack_client.chat_postMessage(channel=channel, text=response_text)
+        else:
+            print("Would send to slack:", channel, response_text)
+
     return response_text, status_code
 
 def handle_player_info(command_text, channel):
@@ -99,7 +103,10 @@ def handle_player_info(command_text, channel):
         status_code = 400
 
     if response_text:
-        slack_client.chat_postMessage(channel=channel, text=response_text)
+        if not os.getenv("DRY_RUN"):
+            slack_client.chat_postMessage(channel=channel, text=response_text)
+        else:
+            print("Would send to slack:", channel, response_text)
     return response_text, status_code
 
 def handle_player_info_image(command_text, channel):
@@ -139,7 +146,10 @@ def handle_player_info_image(command_text, channel):
         status_code = 400
 
     if response_text:
-        slack_client.chat_postMessage(channel=channel, text=response_text)
+        if not os.getenv("DRY_RUN"):
+            slack_client.chat_postMessage(channel=channel, text=response_text)
+        else:
+            print("Would send to slack:", channel, response_text)
     return response_text, status_code
 
 def handle_top_10_players(command_text, channel):
@@ -168,12 +178,22 @@ def handle_top_10_players(command_text, channel):
     return response_text, status_code
 
 def format_scores_grid(pars, scores):
+    score_icons = []
+    for i in range(len(pars)):
+        score_int = try_cast_to_int(scores[i], pars[i])
+        if score_int < pars[i]:
+            score_icons.append("🟢")
+        elif score_int > pars[i]:
+            score_icons.append("🔴")
+        else:
+            score_icons.append("  ")
     grid = "```\n"
     grid += " Hole  |" + "|".join([" " + str(i).ljust(3) for i in range(1, 19)]) + "|\n"
     grid += "-------|" + "|".join(["----" for _ in range(1, 19)]) + "|\n"
     grid += " Par   |" + "|".join([" " + str(par).ljust(3) for par in pars]) + "|\n"
     grid += "-------|" + "|".join(["----" for _ in range(1, 19)]) + "|\n"
-    grid += " Score |" + "|".join([" " + str(score).ljust(3) for score in scores]) + "|\n```"
+    grid += " Score |" + "|".join([" " + str(score).ljust(3) for score in scores]) + "|\n"
+    grid += "       | " + " | ".join([icon for icon in score_icons]) + " |\n```"
     return grid
 
 # "player_info" is of the format:

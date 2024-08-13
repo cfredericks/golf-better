@@ -48,13 +48,16 @@ def save_and_upload_slack_image(image: Image, channel, image_path=f'/tmp/{uuid.u
     return upload_slack_image(channel, image_path, text)
 
 def upload_slack_image(channel, image_path, text="Here is the golf scorecard:"):
-    try:
-        slack_client.files_upload_v2(
-            channels=channel,
-            file=image_path,
-            title="Golf Scorecard",
-            initial_comment=text
-        )
-        return "", 200
-    except Exception as e:
-        return f'Error uploading image: {e}'
+    if not os.getenv("DRY_RUN"):
+        try:
+            slack_client.files_upload_v2(
+                channels=channel,
+                file=image_path,
+                title="Golf Scorecard",
+                initial_comment=text
+            )
+            return "", 200
+        except Exception as e:
+            return f'Error uploading image: {e}'
+    else:
+        return f'image: "{image_path}", text: {text}'
