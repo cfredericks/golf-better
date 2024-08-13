@@ -39,6 +39,18 @@ Then you can curl to the endpoint and it will print to console instead of respon
 curl -XPOST localhost:8080/api/v1/slack/events --data '{"event": {"channel": "test-channel", "user": "test-user", "type": "app_mention", "text": "@MyApp player info thomps wyndh"}}'
 ```
 
+If you'd like to run a local app engine and have it actually interact with Slack, you can first run ngrok to port forward your app engine (need to register an account):
+```bash
+ngrok http 8080
+```
+
+Then you can update the slack app "event subscription" settings to point to this new endpoint, e.g.
+```bash
+https://61e9-2601-642-4900-7-108a-a3e8-97f7-ce02.ngrok-free.app/api/v1/slack/events
+```
+
+Then when you run a local app engine on port 8008, the app integrations in Slack will be forwarded to your local instance.
+
 # Endpoints
 
 - `GET /api/v1/tournaments` - Tournaments
