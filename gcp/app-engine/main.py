@@ -4,6 +4,7 @@ import firebase_admin
 from flask import Flask, request, jsonify
 import json
 import os
+import time
 from slack_handler import handle_slack_command
 from slack_sdk.errors import SlackApiError
 import sqlalchemy
@@ -27,6 +28,9 @@ firebase_admin.initialize_app()
 
 PUBLIC_API_PREFIX = '/api/v1'
 PRIVATE_API_PREFIX = '/protected/api/v1'
+
+# Store processed event_ids with their timestamps
+processed_slack_events = {}
 
 @app.route(PUBLIC_API_PREFIX + '/pga-tournaments', methods=['GET'])
 @validate_token
@@ -128,6 +132,20 @@ def post_slack_events(user_email=None):
 
     if 'challenge' in data:
         return jsonify(data['challenge'])
+
+    # Deduplicate slack messages sent from Slack
+    if data['event_id'] in processed_slack_events:
+        print(f"Skipping duplicate slack event: {data}")
+        return jsonify({'status': 'duplicate event'}), 200
+    else:
+        current_time = time.time()
+        processed_slack_events[data['event_id']] = current_time
+
+        # Cleanup event_ids older than 10 minutes
+        expiration_time_secs = 600  # 10 minutes
+        for event_id in list(processed_slack_events.keys()):
+            if current_time - processed_slack_events[event_id] > expiration_time_secs:
+                del processed_slack_events[event_id]
 
     if 'event' in data:
         event = data['event']

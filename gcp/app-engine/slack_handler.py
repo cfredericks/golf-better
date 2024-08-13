@@ -35,13 +35,15 @@ def handle_slack_command(command_text, channel):
 
     print(f'Finished processing, code={status_code}, msg={msg}')
     if msg:
-        slack_client.chat_postMessage(channel=channel, text=msg)
+        if not os.getenv('DRY_RUN'):
+            slack_client.chat_postMessage(channel=channel, text=msg)
+        else:
+            print(f'Would respond to slack event with channel={channel}, text={msg}')
     return msg, status_code
 
 def handle_tournament_info(command_text, channel):
     # Parse for specific tournament ID or name
     words = command_text.split()
-    status_code = 200
     if len(words) > 3:
         tournament_id = words[-1]  # Assume the last word is the ID
         tournament = get_next_tournaments(tournament_id)
@@ -52,28 +54,21 @@ def handle_tournament_info(command_text, channel):
                 f"Date: {tournament['date']}\n"
                 f"Status: {tournament['status']}\n"
             )
+            return response_text, 200
         else:
-            response_text = "Tournament not found."
-            status_code = 404
-    else:
-        tournaments = get_next_tournaments()
-        response_text = "*Tournaments:*\n"
-        for tournament in tournaments:
-            response_text += f"- {tournament['name']} ({tournament['status']}) - {tournament['date']}\n"
+            return "Tournament not found.", 404
 
-    if response_text:
-        if not os.getenv("DRY_RUN"):
-            slack_client.chat_postMessage(channel=channel, text=response_text)
-        else:
-            print("Would send to slack:", channel, response_text)
+    # Next N tournaments
+    tournaments = get_next_tournaments()
+    response_text = "*Tournaments:*\n"
+    for tournament in tournaments:
+        response_text += f"- {tournament['name']} ({tournament['status']}) - {tournament['date']}\n"
 
-    return response_text, status_code
+    return response_text, 200
 
 def handle_player_info(command_text, channel):
     # Parse for specific player name/id and tournament name/id
     words = command_text.split()
-    response_text = None
-    status_code = 200
     round = None
     if len(words) > 4:
         if len(words) > 5:
@@ -81,39 +76,27 @@ def handle_player_info(command_text, channel):
             tournament_search = words[-2]  # Assume second last word is the tournament name/id
             round = try_cast_to_int(words[-1], None)  # Assume the last word is the round
             if round is None or round < 1 or round > 4:
-                response_text = 'When calling "player info <player> <tournament> <round>", the round must be an integer between 1 and 4'
-                status_code = 400
+                return 'When calling "player info <player> <tournament> <round>", the round must be an integer between 1 and 4', 400
         else:
             player_search = words[-2]  # Assume second last word is player name/id
             tournament_search = words[-1]  # Assume the last word is the tournament name/id
 
-        if not response_text:
-            player_info = get_player(player_search, tournament_search, round)
-            if player_info:
-                response_text = (
-                    f"*{player_info['name']}* in *{player_info['tournament_name']}* (Round {player_info['round']}):\n"
-                    f"Scores:\n"
-                    f"{format_scores_grid(player_info['pars'], player_info['scores'])}"
-                )
-            else:
-                response_text = "Player or tournament not found."
-                status_code = 404
-    else:
-        response_text = "Please specify both a player and a tournament."
-        status_code = 400
-
-    if response_text:
-        if not os.getenv("DRY_RUN"):
-            slack_client.chat_postMessage(channel=channel, text=response_text)
+        player_info = get_player(player_search, tournament_search, round)
+        if player_info:
+            response_text = (
+                f"*{player_info['name']}* in *{player_info['tournament_name']}* (Round {player_info['round']}):\n"
+                f"Scores:\n"
+                f"{format_scores_grid(player_info['pars'], player_info['scores'])}"
+            )
+            return response_text, 200
         else:
-            print("Would send to slack:", channel, response_text)
-    return response_text, status_code
+            return  "Player or tournament not found.", 404
+
+    return "Please specify both a player and a tournament.", 400
 
 def handle_player_info_image(command_text, channel):
     # Parse for specific player name/id and tournament name/id
     words = command_text.split()
-    response_text = None
-    status_code = 200
     round = None
     if len(words) > 5:
         if len(words) > 6:
@@ -121,36 +104,24 @@ def handle_player_info_image(command_text, channel):
             tournament_search = words[-2]  # Assume second last word is the tournament name/id
             round = try_cast_to_int(words[-1], None)  # Assume the last word is the round
             if round is None or round < 1 or round > 4:
-                response_text = 'When calling "player info image <player> <tournament> <round>", the round must be an integer between 1 and 4'
-                status_code = 400
+                return 'When calling "player info image <player> <tournament> <round>", the round must be an integer between 1 and 4', 400
         else:
             player_search = words[-2]  # Assume second last word is player name/id
             tournament_search = words[-1]  # Assume the last word is the tournament name/id
 
-        if not response_text:
-            player_info = get_player(player_search, tournament_search, round)
-            if player_info:
-                try:
-                    # Create and save the image
-                    text = f"*{player_info['name']}* in *{player_info['tournament_name']}* (Round {player_info['round']}):"
-                    image = create_golf_scorecard_image(player_info)
-                    response_text, status_code = save_and_upload_slack_image(image, channel, text=text)
-                except Exception as e:
-                    response_text = f'Error creating image: {e}'
-                    status_code = 500
-            else:
-                response_text = "Player or tournament not found."
-                status_code = 404
-    else:
-        response_text = "Please specify both a player and a tournament."
-        status_code = 400
+        player_info = get_player(player_search, tournament_search, round)
+        if player_info:
+            try:
+                # Create and save the image
+                text = f"*{player_info['name']}* in *{player_info['tournament_name']}* (Round {player_info['round']}):"
+                image = create_golf_scorecard_image(player_info)
+                return save_and_upload_slack_image(image, channel, text=text)
+            except Exception as e:
+                return f'Error creating image: {e}', 500
 
-    if response_text:
-        if not os.getenv("DRY_RUN"):
-            slack_client.chat_postMessage(channel=channel, text=response_text)
-        else:
-            print("Would send to slack:", channel, response_text)
-    return response_text, status_code
+        return "Player or tournament not found.", 404
+
+    return "Please specify both a player and a tournament.", 400
 
 def handle_top_10_players(command_text, channel):
     words = command_text.split()
@@ -164,18 +135,11 @@ def handle_top_10_players(command_text, channel):
                 response_text += (
                     f"{player['rank']}. {player['name']} - Score: {player['score']}\n"
                 )
-        else:
-            response_text = "Tournament not found."
-            status_code = 404
-    else:
-        response_text = "Please specify a tournament."
-        status_code = 400
+            return response_text, 200
 
-    slack_client.chat_postMessage(
-        channel=channel,
-        text=response_text
-    )
-    return response_text, status_code
+        return "Tournament not found.", 404
+
+    return "Please specify a tournament.", 400
 
 def format_scores_grid(pars, scores):
     score_icons = []
