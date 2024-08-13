@@ -34,7 +34,7 @@ To test slack without actually integration with slack, first run the app engine 
 NO_SLACK=1 python3 main.py
 ```
 
-Then you can curl to the endpoint, e.g.
+Then you can curl to the endpoint and it will print to console instead of responding to Slack, e.g.
 ```bash
 curl -XPOST localhost:8080/api/v1/slack/events --data '{"event": {"channel": "test-channel", "user": "test-user", "type": "app_mention", "text": "@MyApp player info thomps wyndh"}}'
 ```
