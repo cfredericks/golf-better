@@ -2,12 +2,14 @@ from datetime import date, datetime
 import firebase_admin
 from flask import Flask, request, jsonify
 import json
+import os
 from slack_handler import handle_slack_command, slack_client
 from slack_sdk.errors import SlackApiError
 import sqlalchemy
 from auth_utils import validate_token
 from db_utils import get_db_connection, DB_SCHEMA
-from slack_utils import verify_slack_signature
+if not os.getenv('NO_SLACK'):
+    from slack_utils import verify_slack_signature
 from utils import json_serial
 
 app = Flask(__name__)
