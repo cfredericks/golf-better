@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 from db_utils import get_next_tournaments, get_player, get_top_players
-from slack_utils import save_and_upload_slack_image, slack_client
+import os
+if not os.getenv('NO_SLACK'):
+    from slack_utils import save_and_upload_slack_image, slack_client
 from utils import try_cast_to_int
 
 
