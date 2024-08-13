@@ -207,7 +207,6 @@ def test_get_player_scorecards_with_id(client, mocker):
 
     # Check that execute was called with the correct query
     expected_query = f"SELECT data FROM golfbetter.pga_player_scorecards where 1=1 and tournament_id = '{m.args['tournamentId']}' and id = '{m.args['id']}'"
-    print(response, m, m.args, expected_query, mock_execute.call_args)
     actual_query = mock_execute.call_args[0][0].text
     assert actual_query == expected_query, f"Expected query: {expected_query}, but got: {actual_query}"
 
