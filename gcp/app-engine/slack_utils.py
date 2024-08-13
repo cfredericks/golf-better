@@ -10,9 +10,10 @@ from slack_sdk import WebClient
 from auth_utils import get_gsm_secret
 
 # Slack configuration
-SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN") or get_gsm_secret('golfbetter-api-slackbot-token')
-SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET") or get_gsm_secret('golfbetter-api-slackbot-signing-secret')
-slack_client = WebClient(token=SLACK_BOT_TOKEN)
+if not os.getenv('NO_SLACK'):
+    SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN") or get_gsm_secret('golfbetter-api-slackbot-token')
+    SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET") or get_gsm_secret('golfbetter-api-slackbot-signing-secret')
+    slack_client = WebClient(token=SLACK_BOT_TOKEN)
 
 def verify_slack_signature(f):
     @wraps(f)
