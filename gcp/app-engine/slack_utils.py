@@ -58,6 +58,6 @@ def upload_slack_image(channel, image_path, text="Here is the golf scorecard:"):
             )
             return "", 200
         except Exception as e:
-            return f'Error uploading image: {e}'
+            return f'Error uploading image: {e}', 400
     else:
-        return f'image: "{image_path}", text: {text}'
+        return f'image: "{image_path}", text: {text}', 200

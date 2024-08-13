@@ -1,8 +1,9 @@
 from PIL import Image, ImageDraw, ImageFont
 from db_queries import get_next_tournaments, get_player, get_top_players
 import os
+from slack_utils import save_and_upload_slack_image
 if not os.getenv('NO_SLACK'):
-    from slack_utils import save_and_upload_slack_image, slack_client
+    from slack_utils import slack_client
 from utils import try_cast_to_int
 
 
@@ -83,11 +84,8 @@ def handle_player_info(command_text):
 
         player_info = get_player(player_search, tournament_search, round)
         if player_info:
-            response_text = (
-                f"*{player_info['name']}* in *{player_info['tournament_name']}* (Round {player_info['round']}):\n"
-                f"Scores:\n"
-                f"{format_scores_grid(player_info['pars'], player_info['scores'])}"
-            )
+            response_text = f"*{player_info['name']}* in *{player_info['tournament_name']}* (Round {player_info['round']}):\n" + \
+                f"Scores:\n{format_scores_grid(player_info['pars'], player_info['scores'])}"
             return response_text, 200
         else:
             return  "Player or tournament not found.", 404
@@ -117,6 +115,7 @@ def handle_player_info_image(command_text, channel):
                 image = create_golf_scorecard_image(player_info)
                 return save_and_upload_slack_image(image, channel, text=text)
             except Exception as e:
+                print(f'Error creating image', e)
                 return f'Error creating image: {e}', 500
 
         return "Player or tournament not found.", 404
@@ -237,12 +236,15 @@ def create_golf_scorecard_image(player_info):
         text_x = shape_center_x - text_width / 2
         text_y = shape_center_y - text_height / 2
 
-        if try_cast_to_int(score, par) < par:  # Birdie or better
-            draw.ellipse([shape_center_x - 10, shape_center_y - 10, shape_center_x + 10, shape_center_y + 10], outline=green, width=2)
+        shots = try_cast_to_int(score, par)
+        if shots < par:  # Birdie or better
+            for i in range(0, par-shots):
+                draw.ellipse([shape_center_x - 10 + i*2, shape_center_y - 10 + i*2, shape_center_x + 10 - i*2, shape_center_y + 10 - i*2], outline=green, width=1)
             draw.text((text_x, text_y), score, fill=black, font=font)
 
-        elif try_cast_to_int(score, par) > par:  # Bogey or worse
-            draw.rectangle([shape_center_x - 10, shape_center_y - 10, shape_center_x + 10, shape_center_y + 10], outline=blue, width=2)
+        elif shots > par:  # Bogey or worse
+            for i in range(0, shots-par):
+                draw.rectangle([shape_center_x - 10 + i*2, shape_center_y - 10 + i*2, shape_center_x + 10 - i*2, shape_center_y + 10 - i*2], outline=blue, width=1)
             draw.text((text_x, text_y), score, fill=black, font=font)
 
         else:  # Par
