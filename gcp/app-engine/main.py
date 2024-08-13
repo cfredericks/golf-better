@@ -9,7 +9,8 @@ from slack_handler import handle_slack_command
 from slack_sdk.errors import SlackApiError
 import sqlalchemy
 from auth_utils import validate_token
-from db_utils import get_db_connection, DB_SCHEMA
+from db_utils import get_db_connection
+from db_queries import DB_SCHEMA
 from utils import json_serial
 
 if not os.getenv('NO_SLACK') and not os.getenv('DRY_RUN'):
