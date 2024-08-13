@@ -18,6 +18,7 @@ def get_next_tournaments(tournament_search=None):
             data->>'countryCode' as countryCode
           from {DB_SCHEMA}.pga_tournaments
           where ({f"lower(id) like '%{str(tournament_search).lower()}%' or lower(name) like '%{str(tournament_search).lower()}%'" if tournament_search is not None else "1=1"})
+            and data->>'date' is not null
           order by is_completed, abs(EXTRACT(EPOCH FROM (NOW() - start_date)))
           limit {1 if tournament_search is not None else 5}
         )
