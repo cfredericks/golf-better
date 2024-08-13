@@ -233,8 +233,8 @@ def create_golf_scorecard_image(player_info):
         # Calculate centered position
         shape_center_x = x0 + cell_width / 2
         shape_center_y = y0 + 55  # Adjust the center of the grid square for scores
-        text_x = shape_center_x - text_width / 2
-        text_y = shape_center_y - text_height / 2
+        text_x = shape_center_x - text_width / 2 + 1
+        text_y = shape_center_y - text_height / 2 - 1
 
         shots = try_cast_to_int(score, par)
         if shots < par:  # Birdie or better

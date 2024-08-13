@@ -36,7 +36,12 @@ NO_SLACK=1 python3 main.py
 
 Then you can curl to the endpoint and it will print to console instead of responding to Slack, e.g.
 ```bash
-curl -XPOST localhost:8080/api/v1/slack/events --data '{"event": {"channel": "test-channel", "user": "test-user", "type": "app_mention", "text": "@MyApp player info thomps wyndh"}}'
+curl -XPOST localhost:8080/api/v1/slack/events --data "{\"event_id\": \"$(uuidgen)\", \"event\": {\"channel\": \"test-channel\", \"user\": \"test-user\", \"type\": \"app_mention\", \"text\": \"@MyApp player info scheffler masters\"}}"
+```
+
+Or, as an example, generate an image and display it locally instead of sending to Slack:
+```bash
+open `curl -XPOST localhost:8080/api/v1/slack/events --data "{\"event_id\": \"$(uuidgen)\", \"event\": {\"channel\": \"test-channel\", \"user\": \"test-user\", \"type\": \"app_mention\", \"text\": \"@MyApp player info image greyser wyndh\"}}" | jq -r '.image'`
 ```
 
 If you'd like to run a local app engine and have it actually interact with Slack, you can first run ngrok to port forward your app engine (need to register an account):
