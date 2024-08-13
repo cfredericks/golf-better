@@ -28,7 +28,7 @@ See directories under /gcp for specific READMEs.
 - [/app](/app) - Android app
   - Also the parent directory [/](/) contains gradle build info
 - [/gcp](/gcp) - Other infrastructure/applications to manage the backend database, app engine, etc.
-  - [/gcp/app-engine](/gcp/app-engine) - App Engine code for serving data to the Android app
+  - [/gcp/app-engine](/gcp/app-engine) - App Engine code for serving data to the Android app and Slack integration
   - [/gcp/cloud-functions/refresh-pga-data](/gcp/cloud-functions/refresh-pga-data) - Cloud Function for periodically syncing PGA APIs into CloudSQL
   - [/gcp/cloud-functions/refresh-leaderboards](/gcp/cloud-functions/refresh-leaderboards) - Cloud Function for periodically syncing tournament leaderboard info from SportsData API into CloudSQL
   - [/gcp/cloud-functions/refresh-tournaments](/gcp/cloud-functions/refresh-tournaments) - Cloud Function for periodically syncing tournament info from SportsData API into CloudSQL
