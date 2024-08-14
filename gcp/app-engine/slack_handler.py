@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 from db_queries import get_next_tournaments, get_player, get_top_players
 import os
+import shlex
 from slack_utils import save_and_upload_slack_image
 if not os.getenv('NO_SLACK'):
     from slack_utils import slack_client
@@ -44,7 +45,7 @@ def handle_slack_command(command_text, channel):
 
 def handle_tournament_info(command_text):
     # Parse for specific tournament ID or name
-    words = command_text.split()
+    words = shlex.split(command_text)
     if len(words) > 3:
         tournament_id = words[-1]  # Assume the last word is the ID
         tournament = get_next_tournaments(tournament_id)
@@ -69,7 +70,7 @@ def handle_tournament_info(command_text):
 
 def handle_player_info(command_text):
     # Parse for specific player name/id and tournament name/id
-    words = command_text.split()
+    words = shlex.split(command_text)
     round = None
     if len(words) > 4:
         if len(words) > 5:
@@ -94,7 +95,7 @@ def handle_player_info(command_text):
 
 def handle_player_info_image(command_text, channel):
     # Parse for specific player name/id and tournament name/id
-    words = command_text.split()
+    words = shlex.split(command_text)
     round = None
     if len(words) > 5:
         if len(words) > 6:
@@ -123,7 +124,7 @@ def handle_player_info_image(command_text, channel):
     return "Please specify both a player and a tournament.", 400
 
 def handle_top_10_players(command_text):
-    words = command_text.split()
+    words = shlex.split(command_text)
     if len(words) > 3:
         tournament_search = words[-1]  # Assume the last word is the tournament name/id
         top_10_players = get_top_players(tournament_search, limit=10)
