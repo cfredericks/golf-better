@@ -1,107 +1,43 @@
+from datetime import datetime
 from functools import wraps
-from flask import Flask, request
-import os
-import json
-from datetime import date, datetime
-from google.cloud.sql.connector import Connector #, IPTypes
-import sqlalchemy
-from google.cloud import secretmanager
-import pg8000
 import firebase_admin
-from firebase_admin import auth
+from flask import Flask, request, jsonify
+import json
+import os
+import time
+from slack_handler import handle_slack_command
+from slack_sdk.errors import SlackApiError
+import sqlalchemy
+from auth_utils import validate_token
+from db_utils import get_db_connection
+from db_queries import DB_SCHEMA
+from utils import json_serial
+
+if not os.getenv('NO_SLACK'):
+    from slack_utils import slack_client, verify_slack_signature
+else:
+    # NOP decorator
+    def verify_slack_signature(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            return f(*args, **kwargs)
+        return decorated_function
 
 app = Flask(__name__)
 
 firebase_admin.initialize_app()
 
-DEFAULT_PROJECT_ID = 'stoked-depth-428423-j7'
-DEFAULT_VERSION_ID = 'latest'
-
 PUBLIC_API_PREFIX = '/api/v1'
 PRIVATE_API_PREFIX = '/protected/api/v1'
 
-# Decorator to parse auth token and extract user email
-def validate_token(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        decoded_token = None
-        if 'Authorization' in request.headers:
-            id_token = request.headers.get('Authorization').split('Bearer ')[1]
-            try:
-                decoded_token = auth.verify_id_token(id_token)
-            except Exception as e:
-                print("Exception decoding auth token", e)
-                return json.dumps({"error": "Unauthorized"}), 401
-
-        if not decoded_token:
-            return json.dumps({"error": "Unauthorized"}), 401
-
-        user_email = decoded_token.get('email')
-        return f(user_email, *args, **kwargs)
-    return decorated_function
-
-def get_gsm_secret(secret_id, project_id=DEFAULT_PROJECT_ID, version_id=DEFAULT_VERSION_ID):
-    client = secretmanager.SecretManagerServiceClient()
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
-    response = client.access_secret_version(name=name)
-    payload = response.payload.data.decode('UTF-8')
-    return payload
-
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    raise TypeError ("Type %s not serializable" % type(obj))
-
-
-def get_db_connection():
-    db_user = os.getenv('DB_USER', default='postgres')
-    db_password = os.getenv('DB_PASSWORD') or get_gsm_secret('golf-better-cloudsql-password')
-    db_name = os.getenv('DB_NAME', default='postgres')
-    db_instance_conn_name = os.getenv('INSTANCE_CONNECTION_NAME', default='stoked-depth-428423-j7:us-central1:golf-better')
-    db_host = os.getenv('DB_HOST', default=f'/cloudsql/{db_instance_conn_name}')
-    db_port = os.getenv('DB_PORT', default=5432)
-
-    pw_log = "****" if db_password is not None else "<unset>"
-    print(f'Connecting to PG on user={db_user}, pw={pw_log}, host={db_host}, port={db_port}, db={db_name}')
-
-    def getconn():
-        if db_instance_conn_name:
-            print(f'Connecting to CloudSQL instance with instance name: "{db_instance_conn_name}"')
-            connector = Connector()
-            return connector.connect(
-                db_instance_conn_name,
-                "pg8000",
-                user=db_user,
-                password=db_password,
-                db=db_name,
-                #ip_type=IPTypes.PRIVATE
-            )
-        else:
-            print('Connecting to vanilla Postgres database')
-            return pg8000.connect(
-                user=db_user,
-                password=db_password,
-                host=db_host,
-                port=db_port,
-                database=db_name
-            )
-
-    pool = sqlalchemy.create_engine(
-        "postgresql+pg8000://",
-        creator=getconn,
-        connect_args={
-            "port": db_port
-        }
-    )
-
-    return pool
+# Store processed event_ids with their timestamps
+processed_slack_events = {}
 
 @app.route(PUBLIC_API_PREFIX + '/pga-tournaments', methods=['GET'])
 @validate_token
 def get_pga_tournaments(user_email):
     print(f"Got get_pga_tournaments request from user: {user_email}")
-    query = "SELECT data FROM golfbetter.pga_tournaments where 1=1"
+    query = f"SELECT data FROM {DB_SCHEMA}.pga_tournaments where 1=1"
     tournament_id = request.args.get('id', None)
     if tournament_id is not None:
         query = query + " and id = '" + str(tournament_id) + "'"
@@ -115,7 +51,7 @@ def get_pga_tournaments(user_email):
 @validate_token
 def get_pga_leaderboard_players(user_email):
     print(f"Got get_pga_leaderboard_players request from user: {user_email}")
-    query = "SELECT data FROM golfbetter.pga_leaderboard_players where 1=1"
+    query = f"SELECT data FROM {DB_SCHEMA}.pga_leaderboard_players where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
         query = query + " and tournament_id = '" + str(tournament_id) + "'"
@@ -131,7 +67,7 @@ def get_pga_leaderboard_players(user_email):
 @validate_token
 def get_pga_player_scorecards(user_email):
     print(f"Got get_pga_player_scorecards request from user: {user_email}")
-    query = "SELECT data FROM golfbetter.pga_player_scorecards where 1=1"
+    query = f"SELECT data FROM {DB_SCHEMA}.pga_player_scorecards where 1=1"
     tournament_id = request.args.get('tournamentId', None)
     if tournament_id is not None:
         query = query + " and tournament_id = '" + str(tournament_id) + "'"
@@ -175,7 +111,7 @@ def post_user(user_email):
     pool = get_db_connection()
     with pool.connect() as db_conn:
         db_conn.execute(sqlalchemy.text(f'''
-            insert into golfbetter.users (id, name, email, created, last_updated, last_login)
+            insert into {DB_SCHEMA}.users (id, name, email, created, last_updated, last_login)
             values ('{id or email}', '{name or email}', '{email}', '{str(now)}', '{str(now)}', '{str(now)}')
             on conflict (id) do update set {", ".join(on_conflict_updates)}
             '''))
@@ -183,6 +119,70 @@ def post_user(user_email):
         print(f'Finished updating user id={id or email} email={email}')
 
     return '', 201
+
+@app.route(PUBLIC_API_PREFIX + '/slack/events', methods=['POST'])
+@verify_slack_signature
+def post_slack_events(user_email=None):
+    data = request.get_json(force=True)
+    print(f"Got post_slack_events request from user: {user_email}: {data}")
+    if data is None:
+        print(f"Empty post body for request: {request}")
+        return 'Post body empty', 400
+
+    exception = None
+
+    if 'challenge' in data:
+        return jsonify(data['challenge'])
+
+    # Deduplicate slack messages sent from Slack
+    if data['event_id'] in processed_slack_events:
+        print(f"Skipping duplicate slack event: {data}")
+        return jsonify({'status': 'duplicate event'}), 200
+    else:
+        current_time = time.time()
+        processed_slack_events[data['event_id']] = current_time
+
+        # Cleanup event_ids older than 10 minutes
+        expiration_time_secs = 600  # 10 minutes
+        for event_id in list(processed_slack_events.keys()):
+            if current_time - processed_slack_events[event_id] > expiration_time_secs:
+                del processed_slack_events[event_id]
+
+    if 'event' in data:
+        event = data['event']
+        channel = event['channel']
+        try:
+            print(f"Slack event received: {event}")
+            if event['type'] == 'message' and 'bot_id' not in event:
+                text = event['text']
+                print(f"Slack message event sent from bot '{event['user']}' for channel '{channel}': '{text}'")
+                return handle_slack_command(text, channel)
+            if event['type'] == 'app_mention' and 'text' in event:
+                text = event['text']
+                print(f"Slack app_mention event sent from bot '{event['user']}' for channel '{channel}': '{text}'")
+                return handle_slack_command(text, channel)
+            print(f'Unknown event type: {event}')
+        except Exception as ex:
+            try:
+                exception = ex
+                msg = f'Error processing message: {data}. {ex}'
+                if not os.getenv('NO_SLACK'):
+                    slack_client.chat_postMessage(channel=channel, text=msg)
+                else:
+                    print(f"Would send error to slack: channel={channel}, text={msg}")
+            except SlackApiError as e:
+                exception = e
+                print(f"Error posting message: {e.response['error']}")
+
+    if not exception:
+        print(f'Unknown type: {data}')
+
+    if exception is not None:
+        print(f"Error processing slack event: {data}", exception)
+    else:
+        print(f"Error processing slack event: {data}")
+    return f"Error processing slack event: {data}", 400
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

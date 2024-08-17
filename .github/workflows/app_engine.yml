@@ -57,8 +57,10 @@ jobs:
       run: |
         pip install pytest pytest-cov pytest-mock pytest-env
     - name: Run unit tests
+      env:
+        NO_SLACK: 1
       run: |
-        pytest gcp/app-engine/test/test_main.py --doctest-modules --junitxml=junit/gcp/app-engine/test-results.xml --cov=main --cov-report=xml --cov-report=html
+        pytest gcp/app-engine/test/*.py --doctest-modules --junitxml=junit/gcp/app-engine/test-results.xml --cov=main --cov-report=xml --cov-report=html
     - name: Run integration tests
       env:
         DB_USER: postgres
@@ -67,8 +69,9 @@ jobs:
         DB_PORT: 5432
         DB_NAME: postgres
         INSTANCE_CONNECTION_NAME: ''
+        NO_SLACK: 1
       run: |
-        pytest gcp/app-engine/test/integration/test_integration.py --doctest-modules --junitxml=junit/gcp/app-engine/test-integration-results.xml --cov=main --cov-report=xml --cov-report=html
+        pytest gcp/app-engine/test/integration/*.py --doctest-modules --junitxml=junit/gcp/app-engine/test-integration-results.xml --cov=main --cov-report=xml --cov-report=html
     - name: Lint with Ruff
       run: |
         pip install ruff
