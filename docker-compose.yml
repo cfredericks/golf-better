@@ -1,0 +1,168 @@
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Database migrations
+  migrations:
+    image: sqitch/sqitch:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./gcp/migrations:/repo
+    working_dir: /repo
+    environment:
+      SQITCH_TARGET: db:pg://postgres:password@postgres:5432/postgres
+    command: deploy
+    profiles:
+      - migrate
+
+  # Flask backend API
+  backend:
+    build:
+      context: ./gcp/app-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=postgres
+      - INSTANCE_CONNECTION_NAME=
+      - NO_SLACK=1
+      - WEB_APP_URL=http://localhost:5173
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+    volumes:
+      - ./gcp/app-engine:/app
+      # Mount credentials if available
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-/dev/null}:/app/credentials.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/pga-tournaments || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # React web frontend (development)
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080
+      - VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY:-}
+      - VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN:-}
+      - VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID:-}
+      - VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET:-}
+      - VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID:-}
+      - VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID:-}
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  # Backend tests
+  backend-test:
+    build:
+      context: ./gcp/app-engine
+      dockerfile: Dockerfile
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=postgres
+      - INSTANCE_CONNECTION_NAME=
+      - NO_SLACK=1
+    volumes:
+      - ./gcp/app-engine:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: pytest test/ -v
+    profiles:
+      - test
+
+  # Backend linting
+  backend-lint:
+    build:
+      context: ./gcp/app-engine
+      dockerfile: Dockerfile
+    volumes:
+      - ./gcp/app-engine:/app
+    command: ruff check .
+    profiles:
+      - lint
+
+  # Web tests
+  web-test:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    command: npm run test
+    profiles:
+      - test
+
+  # Web linting
+  web-lint:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    command: npm run lint
+    profiles:
+      - lint
+
+  # Web build
+  web-build:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-}
+      - VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY:-}
+      - VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN:-}
+      - VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID:-}
+      - VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET:-}
+      - VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID:-}
+      - VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID:-}
+    command: npm run build
+    profiles:
+      - build
+
+volumes:
+  postgres_data:

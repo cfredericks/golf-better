@@ -2,16 +2,24 @@ from datetime import datetime
 from functools import wraps
 import firebase_admin
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import json
 import os
 import time
 from slack_handler import handle_slack_command
 from slack_sdk.errors import SlackApiError
 import sqlalchemy
-from auth_utils import validate_token
+from auth_utils import validate_token, get_user_id_from_token
 from db_utils import get_db_connection
 from db_queries import DB_SCHEMA
 from utils import json_serial
+from league_queries import (
+    get_leagues_for_user, get_league_by_id, create_league, update_league,
+    get_league_members, join_league, create_invitation,
+    get_user_picks, submit_picks, get_available_players,
+    get_league_standings, get_tournament_scoring,
+    get_user_favorites, add_favorite, delete_favorite
+)
 
 if not os.getenv('NO_SLACK'):
     from slack_utils import slack_client, verify_slack_signature
@@ -24,6 +32,19 @@ else:
         return decorated_function
 
 app = Flask(__name__)
+
+# Configure CORS for web app
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            os.getenv('WEB_APP_URL', 'http://localhost:5173'),
+            "https://golf-better.web.app",
+            "https://golf-better.firebaseapp.com",
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Authorization", "Content-Type"],
+    }
+})
 
 firebase_admin.initialize_app()
 
@@ -182,6 +203,228 @@ def post_slack_events(user_email=None):
     else:
         print(f"Error processing slack event: {data}")
     return f"Error processing slack event: {data}", 400
+
+
+# =============================================================================
+# Fantasy League Endpoints
+# =============================================================================
+
+@app.route(PUBLIC_API_PREFIX + '/leagues', methods=['GET'])
+@validate_token
+def get_leagues(user_email):
+    """Get all leagues the user is a member of, plus public leagues."""
+    user_id = get_user_id_from_token()
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        leagues = get_leagues_for_user(db_conn, user_id)
+        return json.dumps(leagues, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues', methods=['POST'])
+@validate_token
+def create_new_league(user_email):
+    """Create a new fantasy league."""
+    user_id = get_user_id_from_token()
+    data = request.get_json(force=True)
+
+    if not data or 'name' not in data:
+        return json.dumps({"error": "League name is required"}), 400
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        league = create_league(
+            db_conn,
+            name=data['name'],
+            owner_id=user_id,
+            league_type=data.get('leagueType', 'season'),
+            roster_config=data.get('rosterConfig', {'roster_size': 6, 'use_tiers': False, 'use_salary_cap': False}),
+            scoring_config=data.get('scoringConfig', {}),
+            pick_deadline_type=data.get('pickDeadlineType', 'tournament_start'),
+            tournament_id=data.get('tournamentId'),
+            is_public=data.get('isPublic', False),
+        )
+        return json.dumps(league, default=json_serial), 201
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>', methods=['GET'])
+@validate_token
+def get_league_detail(user_email, league_id):
+    """Get league details."""
+    user_id = get_user_id_from_token()
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        league = get_league_by_id(db_conn, league_id, user_id)
+        if not league:
+            return json.dumps({"error": "League not found"}), 404
+        return json.dumps(league, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>', methods=['PUT'])
+@validate_token
+def update_league_settings(user_email, league_id):
+    """Update league settings (owner only)."""
+    user_id = get_user_id_from_token()
+    data = request.get_json(force=True)
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        success = update_league(db_conn, league_id, user_id, data)
+        if not success:
+            return json.dumps({"error": "League not found or not authorized"}), 404
+        league = get_league_by_id(db_conn, league_id, user_id)
+        return json.dumps(league, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/members', methods=['GET'])
+@validate_token
+def get_members(user_email, league_id):
+    """Get all members of a league."""
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        members = get_league_members(db_conn, league_id)
+        return json.dumps(members, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/join', methods=['POST'])
+@validate_token
+def join_league_endpoint(user_email, league_id):
+    """Join a league using invite code."""
+    user_id = get_user_id_from_token()
+    data = request.get_json(force=True)
+    invite_code = data.get('inviteCode', '')
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        member = join_league(db_conn, league_id, user_id, invite_code)
+        if not member:
+            return json.dumps({"error": "Invalid invite code or already a member"}), 400
+        return json.dumps(member, default=json_serial), 201
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/invite', methods=['POST'])
+@validate_token
+def invite_to_league_endpoint(user_email, league_id):
+    """Send a league invitation."""
+    user_id = get_user_id_from_token()
+    data = request.get_json(force=True)
+    email = data.get('email')
+
+    if not email:
+        return json.dumps({"error": "Email is required"}), 400
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        invitation = create_invitation(db_conn, league_id, email, user_id)
+        return json.dumps(invitation, default=json_serial), 201
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/picks', methods=['GET'])
+@validate_token
+def get_picks_endpoint(user_email, league_id):
+    """Get user's picks for a league."""
+    user_id = get_user_id_from_token()
+    tournament_id = request.args.get('tournamentId')
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        picks = get_user_picks(db_conn, league_id, user_id, tournament_id)
+        return json.dumps(picks, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/picks', methods=['POST'])
+@validate_token
+def submit_picks_endpoint(user_email, league_id):
+    """Submit picks for a tournament."""
+    user_id = get_user_id_from_token()
+    data = request.get_json(force=True)
+
+    tournament_id = data.get('tournamentId')
+    player_ids = data.get('playerIds', [])
+
+    if not tournament_id:
+        return json.dumps({"error": "Tournament ID is required"}), 400
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        picks = submit_picks(db_conn, league_id, user_id, tournament_id, player_ids)
+        return json.dumps(picks, default=json_serial), 201
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/picks/<tournament_id>/available-players', methods=['GET'])
+@validate_token
+def get_available_players_endpoint(user_email, league_id, tournament_id):
+    """Get players available for picking."""
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        players = get_available_players(db_conn, tournament_id)
+        return json.dumps(players, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/standings', methods=['GET'])
+@validate_token
+def get_standings_endpoint(user_email, league_id):
+    """Get league standings."""
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        standings = get_league_standings(db_conn, league_id)
+        return json.dumps(standings, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/leagues/<league_id>/scoring/<tournament_id>', methods=['GET'])
+@validate_token
+def get_scoring_endpoint(user_email, league_id, tournament_id):
+    """Get detailed scoring for a tournament."""
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        scoring = get_tournament_scoring(db_conn, league_id, tournament_id)
+        return json.dumps(scoring, default=json_serial), 200
+
+
+# =============================================================================
+# Favorites Endpoints
+# =============================================================================
+
+@app.route(PUBLIC_API_PREFIX + '/favorites', methods=['GET'])
+@validate_token
+def get_favorites_endpoint(user_email):
+    """Get user's favorites."""
+    user_id = get_user_id_from_token()
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        favorites = get_user_favorites(db_conn, user_id)
+        return json.dumps(favorites, default=json_serial), 200
+
+
+@app.route(PUBLIC_API_PREFIX + '/favorites', methods=['POST'])
+@validate_token
+def add_favorite_endpoint(user_email):
+    """Add a favorite."""
+    user_id = get_user_id_from_token()
+    data = request.get_json(force=True)
+
+    favorite_type = data.get('favoriteType')
+    target_id = data.get('targetId')
+
+    if not favorite_type or not target_id:
+        return json.dumps({"error": "favoriteType and targetId are required"}), 400
+
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        favorite = add_favorite(db_conn, user_id, favorite_type, target_id)
+        return json.dumps(favorite, default=json_serial), 201
+
+
+@app.route(PUBLIC_API_PREFIX + '/favorites/<favorite_id>', methods=['DELETE'])
+@validate_token
+def delete_favorite_endpoint(user_email, favorite_id):
+    """Delete a favorite."""
+    user_id = get_user_id_from_token()
+    pool = get_db_connection()
+    with pool.connect() as db_conn:
+        success = delete_favorite(db_conn, favorite_id, user_id)
+        if not success:
+            return json.dumps({"error": "Favorite not found"}), 404
+        return '', 204
 
 
 if __name__ == '__main__':

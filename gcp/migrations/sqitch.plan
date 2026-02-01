@@ -4,3 +4,4 @@
 
 appschema 2024-07-26T18:05:57Z System Administrator <root@Coreys-MBP.hsd1.ca.comcast.net> # Add schema for initial objects.
 init [appschema] 2024-07-26T18:06:45Z System Administrator <root@Coreys-MBP.hsd1.ca.comcast.net> # Initial migration.
+fantasy_leagues [init] 2025-01-31T00:00:00Z Developer <dev@golfbetter.com> # Add fantasy league tables.
