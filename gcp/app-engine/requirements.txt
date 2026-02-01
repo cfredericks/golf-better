@@ -7,3 +7,4 @@ google-cloud-secret-manager==2.20.*
 firebase-admin==6.5.*
 slack_sdk==3.31.0
 pillow==10.1.0
+flask-cors==4.*
